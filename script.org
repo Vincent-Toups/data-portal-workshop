@@ -1,0 +1,113 @@
+* Introduction
+
+  Hi everyone. Thank you for making time to attend this small
+  workshop/hackathon to introduce the BACPAC Research Program Data
+  Portal.
+
+  Today we'll cover:
+
+  1. Getting access to the data portal. (Although you hopefully did
+     this before the workshop)
+  2. Using the web based Data Portal to browse for assets and upload
+     personal files.
+  3. Starting and connecting to your virtual machines and doing a
+     little analysis.
+
+  On the way we'll try to do a few non-trivial things and hopefully
+  you'll uncover issues with the data portal which we can begin to
+  resolve.
+
+* Gaining Access to the BACPAC Data Portal.
+
+  The key to accessing the data portal is the "Data Access and
+  Publication Request Form" which you or someone from your research
+  group will fill out. The form supports requests for a variety of
+  research purposes, but since you can make revision requests and
+  because we'll be working with data which will be available to anyone
+  (the data set associated with the Ashar et al 2021 paper "Effect of
+  Pain Reprocessing Therapy vs Placebo and Usual Care for Patients
+  With Chronic Back Pain A Randomized Clinical Trial").
+
+  So for the purposes of this workshop you need only fill out the form
+  requesting access for yourself under the aegis of your PI and
+  without the intent to publish a paper.
+
+  The [[https://unc.az1.qualtrics.com/CP/File.php?F=F_eVy3GPRAKK2sTFY][form]] is available via Microsoft Teams and needs to be submitted
+  via [[https://teams.microsoft.com/l/channel/19%3A1f17988f3f9d47019b45e7221b449e14%40thread.skype/tab%3A%3Aaf358994-7635-4498-af88-bc767bd20348?groupId=6633d7f4-6063-419d-ba64-99e9b9e87e75&tenantId=58b3d54f-16c9-42d3-af08-1fcabd095666][Teams]].
+
+  You should all have filled this form out before this meeting and
+  already have data portal access.
+
+* The BACPAC Data Portal
+
+  Visit [[https://www.bacpacresearch.org][www.bacpacresearch.org]] and click log in. Here you log in with
+  whatever email address you used when making your DAPR request.
+
+  Then we're in.
+
+  #+CAPTION: The BACPAC Data Portal Welcome Page
+  #+NAME: welcome
+  [[./welcome.png]]
+
+  There is a lot going on with the data portal, so let's do a quick
+  run through.
+
+  The fundamental reason the data portal exists is to provide
+  researchers with a place to access data which cannot be readily
+  shared for confidentiality and privacy reasons. Instead of bringing
+  the data to your compute resources, the Data Portal lets you create
+  and work on compute resources which are next to the data.
+
+  In order to do that, each data portal account is associated with a
+  special profile. Once VMs are created on the Portal's web interface,
+  you can use that profile to log into the machines via your browser
+  and work from there.
+
+* The Computing Console
+
+  Since this is a hackathon-type event lets just jump right into the
+  computing console.
+
+  #+CAPTION: The computing console.
+  #+NAME: compute-console
+  [[./compute-console.png]]
+
+  When you first log on you'll see that you have no machines of any
+  type associated with your account. I'm primarily a Linux users but
+  lets begin by starting a Windows VM (a small one). The plan here is
+  for us to start the VM, explore a data set, and then install some
+  custom software.
+
+  Click the "+" button next to the "Computing Console" title:
+
+  #+CAPTION: The "+" button allows you to create a new virtual machine.
+  #+NAME: the-plus-button
+  [[./the-plus-button.png]]
+
+
+  We have our choice of many virtual machines. Unless you have a
+  specific high performance computing task, its most cost effective
+  for BACPAC if you run a small VM. Let's do that now.
+
+  After waiting a little while our VM will be ready to go. Our login
+  process is a bit complicated, but let's go ahead and walk through
+  it.
+
+  We click the VM, copy the link from the connect button, paste it
+  into an incognito window, open our profile or VM page, and log in a
+  few times withour /vm/ password. Eventually we will find ourselves
+  looking at a Windows Desktop.
+
+* Tour of the VM
+
+  Regardless of the size of the VM you started, the setup of the
+  Windows VM will be similar. The most important element is the
+  location of the data. Let's navigate to C:/mnt/containers/ to see
+  our personal, project, and canonical data. For this tutorial we'll
+  be working with the Ashar data in the canonical space.
+
+  Things should more or less work as you expect in this VM. Note,
+  however, that most of the web is blocked to make accidentally
+  leaking confidential data more difficult.
+
+  

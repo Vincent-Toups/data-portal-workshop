@@ -1,0 +1,21 @@
+#+TITLE: Data Portal Visualization Jam
+#+OPTIONS: toc:nil
+
+* Data Portal Visualization Jam
+
+The Data Portal Visualization Jam will be an informal workshop which
+will walk interested participants through the entire process of
+gaining access to the data portal, usings its features, connecting to
+virtual machines, and analyzing BACPAC Research Program data.
+
+After an orientation on Monday April 25th, during which a complete
+(small) project walkthrough will be presented, participants will be
+encouraged to use their own data portal accounts to explore the data
+set associated with the paper "Effect of Pain Reprocessing Therapy vs
+Placebo and Usual Care for Patients with Chronic Back Pain (A
+Randomized Clinical Trial)" (Ashar et al, 2021) to the end of
+producing interesting visualizations. A short meeting on Friday Apr
+29th will allow participants to show their results and share insights.
+
+The intent of the workshop is to provide users the chances to use the
+Data Portal, test its capabilities and make requests for improvements.
