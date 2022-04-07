@@ -1,0 +1,17 @@
+* Visualization Workshop Schedule
+
+|-------------+-----------------------------------------------------------------|
+|        Time | Activity                                                        |
+|-------------+-----------------------------------------------------------------|
+|   9:00-9:30 | Introduction to the Data Portal and VMs                         |
+|  9:30-10:00 | Work Time                                                       |
+| 10:00-10:30 | Intoduction to the Container Hierarchy and Ashar data set       |
+| 10:30-11:00 | Using the Statistical Environments and Adding your Own Software |
+| 11:00-11:30 | Free Work Time                                                  |
+| 11:00-11:30 | Standardized Data Sets                                          |
+| 11:30-12:00 | Lunch Break                                                     |
+| 12:00-12:30 | Docker Containers & The VMs                                     |
+|  12:30-1:00 | Visualization Jam Kick Off & Question Time                      |
+|-------------+-----------------------------------------------------------------|
+
+
