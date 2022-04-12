@@ -1,7 +1,7 @@
 import * as d3 from "https://cdn.skypack.dev/d3@7";
 
 const svg_element = d3.selectAll("#vis");
-const numerical_columns = "id group pain_avg bpi_intensity bpi_interference odi promis_dep promis_anger promis_anxiety promis_sleep panas_pa panas_na pcs tsk11 sopa_emo pgic tx_satisfaction alcohol opioid cannabis AE1 AE2 cluster time".split(" ");
+const numerical_columns = "id group pain_avg bpi_intensity bpi_interference odi promis_dep promis_anger promis_anxiety promis_sleep panas_pa panas_na pcs tsk11 sopa_emo pgic tx_satisfaction alcohol opioid cannabis AE1 AE2 cluster time demographic_cluster".split(" ");
 
 const get_bounds = (data, cols) => {
     var out = {};
@@ -44,9 +44,9 @@ d3.csv("derived_data/clinical_outcomes-d3.csv",
         numerical_columns.forEach(c => row[c] = +row[c]);
         return row;
       }).then(data => {
-          const tight_bounds = get_bounds(data, ["AE1", "AE2"]);
-          const x_bounds = widen_bounds(tight_bounds.AE1_min, tight_bounds.AE1_max, 0.1);
-          const y_bounds = widen_bounds(tight_bounds.AE2_min, tight_bounds.AE2_max, 0.1);
+          const tight_bounds = get_bounds(data, ["bpi_intensity", "bpi_interference"]);
+          const x_bounds = widen_bounds(tight_bounds.bpi_intensity_min, tight_bounds.bpi_intensity_max, 0.1);
+          const y_bounds = widen_bounds(tight_bounds.bpi_interference_min, tight_bounds.bpi_interference_max, 0.1);
           const vis = d3.select("#vis").attr("viewBox",[x_bounds[0], y_bounds[0],
                                                       x_bounds[1]-x_bounds[0],
                                                         y_bounds[1]-y_bounds[0]])
@@ -58,10 +58,10 @@ d3.csv("derived_data/clinical_outcomes-d3.csv",
           
           vis.selectAll("circle").data(times[0],idfun)
               .join("circle")
-              .attr("cx", d=>d.AE1)
-              .attr("cy", d=>d.AE2)
-              .attr("r", 0.01)
-              .attr("fill", row=>colors[row.group]);
+              .attr("cx", d=>d.bpi_intensity)
+              .attr("cy", d=>d.bpi_interference)
+              .attr("r", 0.1)
+              .attr("fill", row=>colors[row.demographic_cluster]);
 
           var i = 0;
           setInterval(_ => {
@@ -70,10 +70,10 @@ d3.csv("derived_data/clinical_outcomes-d3.csv",
                   .join("circle")
                   .transition()
                   .duration(2000)
-                  .attr("cx", d=>d.AE1)
-                  .attr("cy", d=>d.AE2)
-                  .attr("r", 0.01)
-                  .attr("fill", row=>colors[row.group]);
+                  .attr("cx", d=>d.bpi_intensity)
+                  .attr("cy", d=>d.bpi_interference)
+                  .attr("r", 0.1)
+                  .attr("fill", row=>colors[row.demographic_cluster]);
           }, 2000)
       });
 

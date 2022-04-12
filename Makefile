@@ -1,4 +1,5 @@
 .PHONY: clean
+.PHONY: d3-vis
 
 clean:
 	rm -rf models
@@ -39,7 +40,12 @@ sentinels/cluster-plots.txt: derived_data/clinical-outcomes-with-clustering.csv 
 sentinels/boxplots.txt: source_data/clinical_outcomes.csv box-scatters.R
 	Rscript box-scatters.R
 
-derived_data/clinical_outcomes-d3.csv: derived_data/clinical-outcomes-with-clustering.csv augment-with-experimental-time.R
+derived_data/demographic_ae.csv\
+ figures/demo-projection.png: source_data/demographics.csv demographics-ae.py
+	python3 demographics-ae.py
+
+derived_data/clinical_outcomes-d3.csv: derived_data/clinical-outcomes-with-clustering.csv augment-with-experimental-time.R derived_data/demographic_ae.csv
 	Rscript augment-with-experimental-time.R
 
-
+d3-vis: derived_data/clinical_outcomes-d3.csv
+	python3 -m http.server 8888

@@ -1,3 +1,7 @@
+#+TITLE: Notes for the BACPAC Data Portal Workshop
+#+AUTHOR: Vincent Toups
+
+
 * Introduction
 
 Hi everyone. Thank you for making time to attend this small
@@ -63,6 +67,52 @@ special profile. Once VMs are created on the Portal's web interface,
 you can use that profile to log into the machines via your browser
 and work from there.
 
+* The Asset Browser
+
+To facilitate asset sharing, the data portal provides an asset browser
+which allows you to search for data available on the portal in a
+variety of ways.
+
+A variety of standard meta-data is available for each data set. In
+addition, many data sets have custom meta-data fields which are
+controlled by me and allow you to search (for instance) for any data
+set which contains a particular column or column value (where
+confidentially allows us to expose that information).
+
+This meta-data search feature can be a little tricky to understand but
+is pretty useful.
+
+The technically savvy among us might want to think of a data-set's
+meta-data as a JSON object with a set of Key/value pairs, where most
+often the value of which is a list.
+
+If you submit data to the Data Portal you may wish to let me know how
+best to generate meta-data or to send the meta-data fields you'd like
+to make searchable to me.
+* Project Space
+
+Each Data Access and Publication Request Form results in the creation
+of a new project (project names are assigned by Cameron Gunn during
+processing based on the information in the form) under the assumption
+that each team implied in a new form (as opposed to a request for
+modification) constitutes a new project.
+
+These project spaces are a great place to host a _centralized_ git
+repository, particularly because the VM firewall prevents access to
+sites like github which might otherwise host git repositories.
+
+* My Workspace
+
+This is personal space. We'll see several uses for this space
+throughout the workshop, but you can think of it as the "approved"
+portal between your virtual machines and the outside world.
+
+If you draft a paper inside your VM and want to download a PDF, then
+you would put it in this space and Download it from the Data
+Portal. If you want to upload an R library not available on CRAN, or a
+set of SAS utilities that you carry around with you, you would upload
+it to this space and it will be available within the VM.
+
 * The Computing Console
 
 Since this is a hackathon-type event lets just jump right into the
@@ -95,10 +145,19 @@ it.
 
 We click the VM, copy the link from the connect button, paste it
 into an incognito window, open our profile or VM page, and log in a
-few times withour /vm/ password. Eventually we will find ourselves
+few times with our /vm/ password. Eventually we will find ourselves
 looking at a Windows Desktop.
 
-* Tour of the VM
+#+CAPTION: VMs use a different username and password which is presented here.
+#+NAME: vm-user-and-password
+[[./vm-user-and-password.png]]
+
+
+#+CAPTION: No one knows.
+#+NAME: dog
+[[./dog.png]]
+
+** Tour of the VM
 
 Regardless of the size of the VM you started, the setup of the
 Windows VM will be similar. The most important element is the
@@ -114,6 +173,24 @@ There are exceptions to this rule meant to make life easier: CRAN
 and PIP repositories are unlocked so you can install material from
 them (assuming they don't require any other access to the internet).
 
+For example, it isn't a standard part of the VM load out, but many
+users enjoy using Jupyter notebooks to organize their work. We can
+install Jupyter like this:
+
+#+CAPTION: Using pip on Windows to install Jupyterlab.
+#+NAME: pip-windows
+[[./pip-windows.png]]
+
+Or on a Linux machine:
+
+#+CAPTION: Installing Jupyter Lab on Linux.
+#+NAME: jupyter-on-linux
+[[./jupyter-on-linux.png]]
+
+#+CAPTION: Jupyter Lab up and running.
+#+NAME: linux-tada
+[[./linux-tada.png]]
+
 ** Data
 
 The main point of the Data Portal is data analysis. The data portal
@@ -124,9 +201,187 @@ use in the workshop today), Project Data (which only people who are
 part of the project may access) and Personal Data which you may use
 to move things in and out of the data portal.
 
-** The Asset Browser
+On both linux and Windows these files are mounted in (more or less)
+the same location:
 
-To facilitate asset sharing, the data portal provides an asset browser
-which allows you to search for data available on the portal in a
-variety of ways.
+/mnt/containers/
 
+or
+
+C:\mnt\containers\
+
+Within these directories are the personal, project, and canonical
+spaces.
+
+If you upload data to your personal space, it will appear in the
+folder under personal. You get the idea.
+
+For today's workshop we'll be looking at the Ashar data set which is
+available in the canonical container:
+
+#+CAPTION: The location of the Ashar data in the canonical file hierarchy.
+#+NAME: canonical-ashar-ws-data
+[[./canonical-ashar-ws-data.png]]
+
+** Doing something w/ the Data
+* "Effect of Pain Reprocessing Therapy vs Placebo and Usual Care for Patients With Chronic Back Pain"
+
+Everyone at the workshop should feel free to explore the data portal
+with whatever data set they wish, but so that we can all have a common
+baseline I'll be using data from the paper "Effect of Pain Reprocessing Therapy vs Placebo
+and Usual Care for Patients With Chronic Back Pain" (Ashar et al, JAMA
+Psychiatry, 2021).
+
+Very briefly, this paper examines the efficacy of Pain
+Recontextualization Therapy for chronic lower back pain (compared to
+saline injections and standard of care).
+
+Patients were split into three groups (Pain Recontextualization
+Therapy (PRT), Saline and standard of care) and tracked for 12 months. The
+results are very positive for PRT:
+
+#+CAPTION: A pretty obvious success story.
+#+NAME: effectiveness-of-prt-on-intensity
+[[./effectiveness-of-prt-on-intensity.png]]
+
+Let's take a deeper look at the data.
+
+If we view the folder where our data is located:
+
+#+CAPTION: The Ashar data set and associated meta-data.
+#+NAME: ashar-dataset-location-windows
+[[./ashar-dataset-location-windows.png]]
+
+We can see that the data set comes with a codebook. We'll mostly be
+working with the "clinical_outcomes.csv" data set here, and it turns
+out that the information about this data set is in "Codebook
+Additional notes.txt":
+
+#+CAPTION: The clinical outcomes codebook.
+#+NAME: codebook-ashar
+[[./codebook-ashar.png]]
+
+Let's use Windows and our newly installed Jupyter server to look at
+our Ashar data set.
+
+We'll be looking at the clinical outcomes data set from that
+repository.
+
+#+CAPTION: The first few rows and columns of the Ashar clinical outcomes data set.
+#+NAME: ashar-clinical-outcomes-ss
+[[./ashar-clinical-outcomes-ss.png]]
+
+
+The simplest thing for us to do here is to load the data and make a
+set of pairplots.
+
+#+CAPTION: A subset of the pairplots from the Ashar clinical outcomes dataset.
+#+NAME: ashar-clinical-outcomes
+[[./ashar-clinical-outcomes.png]]
+
+* A Brief Aside about Ursala
+
+#+CAPTION: Ursala may be used to instruct a computer to perform a task.
+#+NAME: may-be-used
+[[./may-be-used.png]]
+
+Many years ago I was browsing Reddit (this was before reddit was
+"cool"/"bad") when I encountered the following post:
+
+You can imagine my confusion when I clicked through and saw someone
+confidently espousing the value of their own home grown programming
+language that looked like this:
+
+#+CAPTION: Ursala - Thanks but no thanks.
+#+NAME: thanks-but-no
+[[./thanks-but-no.png]]
+
+Ursala, I would later learn, is one of the many descendants of the
+programming language [[https://en.wikipedia.org/wiki/APL_(programming_language)][APL]].
+
+#+CAPTION: An APL Keyboard.
+#+NAME: an-apl-keyboard
+[[./an-apl-keyboard.png]]
+
+Back when people still programmed in Perl, other people used to joke
+that Perl looked like "line noise" - random characters you'd get if
+you just send random fluctuations down a teletype terminal. Despite
+the fact that Ursala looks a lot more like line noise than APL, I was
+intrigued. In fact, I was already programming in Matlab, which, like
+R and Numpy, are descendants of APL, and by pulling on the thread that
+Ursala showed me, I eventually became interested in J.
+
+And now I will pass that brain virus onto you.
+
+The good ideas in J:
+
+1. tacit programming - If an expression involves only functions (verbs
+   in J) then that function "automagically" composes into a more
+   complex function according to a few rules. This is a little mind
+   bending but its sort of like "data flow" programming - you don't
+   name things you operate on, just think about flow of data.
+2. rank - verbs have "rank" (sort of like multidimensional matrices)
+   that you can customize on the fly. This effects the way that verbs
+   operate on the matrices: rank 0 verbs operate on the whole thing,
+   rank 1 on the "1 cells" (eg, in a 1 dimensional array the elements,
+   in a two dimensional array the rows, etc). Using rank you can
+   eliminate almost all looping constructs.
+
+The bad ideas in J:
+
+1. everything else
+
+* Installing External Software on your VMs
+
+The VM's are totally locked down (with the exception of pip and CRAN
+and a few other sites). So if you're a weirdo like me and you want to
+program in J, you have to install this software on your own. The
+general idea here is:
+
+1. download the installer for your system
+2. upload it to your VM
+3. install the software there
+
+But in practice making any specific piece of software work the way you
+want can be a little tricky. Setting up J on the Windows VM is just
+slightly non-trivial and so serves as a good use case.
+
+The first step is to download J for Windows. If possible, you want to
+download a "standalone" version of the software you need instead of an
+installer. Its not uncommon for installers to want to talk to the
+internet, and this is a non-starter.
+
+If we visit [[https://jsoftware.com][JSoftware]] we can see what sort of installers we need.
+
+J happens to have a zip "stand alone" type installer which we can grab
+here:
+
+#+CAPTION: Just a directory of files.
+#+NAME: j-software-zip
+[[./j-software-zip.png]]
+
+We now just unpack this locally and follow the instructions. J is nice
+in that you can install literally every package that it comes with in
+a few minutes:
+
+#+begin_src J
+  load 'pacman'
+  'install' jpkg '*'
+  exit 0
+#+end_src
+
+So I've done this already on my CSCC Desktop (which runs windows) and
+then copied it into my VM.
+
+#+CAPTION: Uploading a zip of my J directories.
+#+NAME: upload-j908-bundle
+[[./upload-j908-bundle.png]]
+
+
+Once I've got it into the VM, I can just start J and do some analysis:
+
+#+CAPTION: Putting in error bars was more pain than I was willing to endure.
+#+NAME: ashar-lineplot-from-j
+[[./ashar-lineplot-from-j.png]]
+
+Believe it or not, this is unusually comprehensible J.
