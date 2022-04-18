@@ -53,18 +53,18 @@ derived_data/clinical-outcomes-with-clustering.csv\
 # interesting and the AE projection is just (roughly) back pain
 # intensity.
 # Note this uses a sentinal value because we produce many scripts.
-sentinels/cluster-plots.txt: derived_data/clinical-outcomes-with-clustering.csv cluster-plots.R
+sentinels/cluster-plots.txt: .created-dirs derived_data/clinical-outcomes-with-clustering.csv cluster-plots.R
 	Rscript cluster-plots.R
 
 # Similar to above.
-sentinels/boxplots.txt: source_data/clinical_outcomes.csv box-scatters.R
+sentinels/boxplots.txt: .created-dirs source_data/clinical_outcomes.csv box-scatters.R
 	Rscript box-scatters.R
 
 
 # Augment the clinical outcomes data (with its AE projection) with
 # time points so that we can view them in a d3 visualization. Not
 # useful.
-derived_data/clinical_outcomes-d3.csv: derived_data/clinical-outcomes-with-clustering.csv augment-with-experimental-time.R derived_data/demographic_ae.csv
+derived_data/clinical_outcomes-d3.csv: .created-dirs derived_data/clinical-outcomes-with-clustering.csv augment-with-experimental-time.R derived_data/demographic_ae.csv
 	Rscript augment-with-experimental-time.R
 
 # Train a (variational) auto-encoder for demographic data. This allows
@@ -81,13 +81,13 @@ derived_data/demographic_ae_sdf.csv derived_data/demographic_ae.csv: demographic
 # each cluster. From this model we can extract the important variables
 # for each cluster and report their medians. We simply save the labels
 # here for future use.
-derived_data/cluster_labels.csv: explain_encoding.R derived_data/demographic_ae_sdf.csv
+derived_data/cluster_labels.csv: .created-dirs explain_encoding.R derived_data/demographic_ae_sdf.csv
 	Rscript explain_encoding.R
 
 # Produce a figure which shows the clinical outcomes for our
 # demographic clusters. Use the labels we calculated above to make the
 # results comprehensible.
-figures/outcomes_by_demographic_clustering.png: demo-outcomes.R derived_data/clinical-outcomes-with-clustering.csv derived_data/cluster_labels.csv derived_data/demographic_ae.csv
+figures/outcomes_by_demographic_clustering.png: .created-dirs demo-outcomes.R derived_data/clinical-outcomes-with-clustering.csv derived_data/cluster_labels.csv derived_data/demographic_ae.csv
 	Rscript demo-outcomes.R
 
 # dummy target to show a d3 visualization.
