@@ -8,8 +8,8 @@
 |   1:00-1:30 | Work Time                                                 |
 |   1:30-2:00 | Adding your Own Software                                  |
 |   2:00-2:30 | Work Time                                                 |
-|   2:30-3:00 | Tea Time                                                  |
-|   3:00-3:30 | Docker Containers & The VMs                               |
+|   2:30-2:45 | Tea Time                                                  |
+|   2:45-3:30 | Docker Containers & The VMs                               |
 |   3:30-4:00 | Visualization Jam Kick Off & Question Time                |
 |-------------+-----------------------------------------------------------|
 

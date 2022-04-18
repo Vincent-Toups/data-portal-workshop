@@ -1,11 +1,10 @@
 #+TITLE: Notes for the BACPAC Data Portal Workshop
 #+AUTHOR: Vincent Toups
 
-
 * Introduction
 
 Hi everyone. Thank you for making time to attend this small
-workshop/hackathon to introduce the BACPAC Research Program Data
+workshop/hackathon to introduce the BACPAC Data
 Portal.
 
 Today we'll cover:
@@ -16,31 +15,36 @@ Today we'll cover:
       personal files.
    3. Starting and connecting to your virtual machines and doing a
       little analysis.
+   4. Installing unusual software or libraries in your virtual
+      machines
+   5. Using Docker containers in the case that all else fails.
 
-      On the way we'll try to do a few non-trivial things and hopefully
-      you'll uncover issues with the data portal which we can begin to
-      resolve.
+There will be a few points during the workshop where I'll as
+participants to spend some time actually using the portal so that you
+get go through some of the more technical parts of the process
+yourself while I'm here to assist.
+
+To give you all an excuse to do more than a little work on the portal,
+we'll meet again in one week for people to share some interesting
+visualizations of the Ashar data set.
 
 * Gaining Access to the BACPAC Data Portal.
 
 The key to accessing the data portal is the "Data Access and
 Publication Request Form" which you or someone from your research
-group will fill out. The form supports requests for a variety of
-research purposes, but since you can make revision requests and
-because we'll be working with data which will be available to anyone
+group will fill out. After you submitted your DAPR requests, you
+should have been added to a project called "Workshop_April2022", which
+will give you access to the data set we will be using in this project
 (the data set associated with the Ashar et al 2021 paper "Effect of
-Pain Reprocessing Therapy vs Placebo and Usual Care for Patients
-With Chronic Back Pain A Randomized Clinical Trial").
-
-So for the purposes of this workshop you need only fill out the form
-requesting access for yourself under the aegis of your PI and
-without the intent to publish a paper.
+Pain Reprocessing Therapy vs Placebo and Usual Care for Patients With
+Chronic Back Pain A Randomized Clinical Trial").
 
 The [[https://unc.az1.qualtrics.com/CP/File.php?F=F_eVy3GPRAKK2sTFY][form]] is available via Microsoft Teams and needs to be submitted
 via [[https://teams.microsoft.com/l/channel/19%3A1f17988f3f9d47019b45e7221b449e14%40thread.skype/tab%3A%3Aaf358994-7635-4498-af88-bc767bd20348?groupId=6633d7f4-6063-419d-ba64-99e9b9e87e75&tenantId=58b3d54f-16c9-42d3-af08-1fcabd095666][Teams]].
 
 You should all have filled this form out before this meeting and
-already have data portal access.
+already have data portal access and access to the Workshop_April2022
+Project.
 
 * The BACPAC Data Portal
 
@@ -66,6 +70,10 @@ In order to do that, each data portal account is associated with a
 special profile. Once VMs are created on the Portal's web interface,
 you can use that profile to log into the machines via your browser
 and work from there.
+
+#+CAPTION: Your profile page contains information necessary to log into your BACPAC Virtual Machines.
+#+NAME: profile-page-ss-new
+[[./profile-page-ss-new.png]]
 
 * The Asset Browser
 
@@ -157,13 +165,67 @@ looking at a Windows Desktop.
 #+NAME: dog
 [[./dog.png]]
 
+#+CAPTION: RDWeb, your gateway to the BACPAC Virtual Machines.
+#+NAME: rd-web-opening-page
+[[./rd-web-opening-page.png]]
+
+We click "remote desktop" and then log in:
+
+#+CAPTION: Log in with your special "profile" credentials.
+#+NAME: log-in-1
+[[./log-in-1.png]]
+
+Click "show options"
+
+#+CAPTION: Click "show options."
+#+NAME: show-options
+[[./show-options.png]]
+
+The "Open" to open a pre-configured connection setup.
+#+CAPTION: Click "open."
+#+NAME: open-a-connection-configuration
+[[./open-a-connection-configuration.png]]
+
+And then select the right configuration for you virtual machine. Its
+pretty straightforward: PRD-<OS>-<Number>-<Size>.
+
+#+CAPTION: Opening a medium (M) windows (WIN) machine.
+#+NAME: opening-a-medium-windows-machine
+[[./opening-a-medium-windows-machine.png]]
+
+After clicking "open" we can now click connect:
+
+#+CAPTION: Clicking connect.
+#+NAME: clicking-connect
+[[./clicking-connect.png]]
+
+And we have a few more hoops to jump through:
+
+#+CAPTION: Click "connect."
+#+NAME: accept-security-warning
+[[./accept-security-warning.png]]
+
+Enter your password again:
+
+#+CAPTION: Enter your password again.
+#+NAME: password-again
+[[./password-again.png]]
+
+Accept the certificate:
+
+#+CAPTION: Accept the certificate.
+#+NAME: accept-certificate
+[[./accept-certificate.png]]
+
+And you will be connected to your Virtual Machine's desktop.
+
 ** Tour of the VM
 
-Regardless of the size of the VM you started, the setup of the
-Windows VM will be similar. The most important element is the
-location of the data. Let's navigate to C:/mnt/containers/ to see
-our personal, project, and canonical data. For this tutorial we'll
-be working with the Ashar data in the canonical space.
+Regardless of the size of the VM you started, the setup of the Windows
+VM will be similar. The most important element is the location of the
+data. Let's navigate to C:/mnt/containers/ to see our personal,
+project, and canonical data. For this tutorial we'll be working with
+the Ashar data in the project space created for this workshop.
 
 Things should more or less work as you expect in this VM. Note,
 however, that most of the web is blocked to make accidentally
@@ -217,11 +279,18 @@ If you upload data to your personal space, it will appear in the
 folder under personal. You get the idea.
 
 For today's workshop we'll be looking at the Ashar data set which is
-available in the canonical container:
+available in a shared project folder we created explicitly for the
+workshop:
 
-#+CAPTION: The location of the Ashar data in the canonical file hierarchy.
-#+NAME: canonical-ashar-ws-data
-[[./canonical-ashar-ws-data.png]]
+#+begin_src fundamental
+  C:\mnt\containters\project\Workshop_April2022/ashar_data
+  # or
+  /mnt/containers/project/Workshop_April2022/ashar_data
+#+end_src
+
+#+CAPTION: The location of the Ashar et al data set in the project space.
+#+NAME: project-ashar-location
+[[./project-ashar-location.png]]
 
 ** Doing something w/ the Data
 * "Effect of Pain Reprocessing Therapy vs Placebo and Usual Care for Patients With Chronic Back Pain"
@@ -237,8 +306,8 @@ Recontextualization Therapy for chronic lower back pain (compared to
 saline injections and standard of care).
 
 Patients were split into three groups (Pain Recontextualization
-Therapy (PRT), Saline and standard of care) and tracked for 12 months. The
-results are very positive for PRT:
+Therapy (PRT), Saline Injection and standard of care) and tracked for
+12 months. The results are very positive for PRT:
 
 #+CAPTION: A pretty obvious success story.
 #+NAME: effectiveness-of-prt-on-intensity
@@ -278,6 +347,18 @@ set of pairplots.
 #+CAPTION: A subset of the pairplots from the Ashar clinical outcomes dataset.
 #+NAME: ashar-clinical-outcomes
 [[./ashar-clinical-outcomes.png]]
+
+* Work Time
+
+At this point I'd like to take a half hour to let participants log
+into the Data Portal, build some VM's, log into them, and at least
+open the data and look at it in their preferred environment. I'll be
+available the entire time for questions. This is also a good time to
+stretch your legs, make some tea, run a quick mile.
+
+#+CAPTION: Try it out for yourself.
+#+NAME: work-time
+[[./work-time.png]]
 
 * A Brief Aside about Ursala
 
@@ -385,3 +466,150 @@ Once I've got it into the VM, I can just start J and do some analysis:
 [[./ashar-lineplot-from-j.png]]
 
 Believe it or not, this is unusually comprehensible J.
+
+
+* What (and why) is Docker?
+Docker is a tool from the system's administrator's toolbox. It was
+invented to solve at least one basic problem:
+
+Software doesn't run in a vacuum. Any given program may depend on the
+context it runs in (the operating system, libraries, environment
+variables, network configuration) in non-trivial ways. Developers used
+to solve this problem by either haphazardly, by manually configuring
+machines for development and production for each user and deployment,
+or by writing complicated scripts.
+
+When virtualization became a thing, this process was made a little
+easier: you could snapshot pristine VMs at just the point you needed
+them and revert or copy snapshots around to smooth out these
+processes.
+
+But virtual machines are relatively heavy-weight. Docker is a
+container platform which gives you some of the fleetness of simply
+running a program and most of what you'd get from maintaining virtual
+machine images. It also standardizes the process of setting up virtual
+machines so that VM's can be shared as built images or just files
+which describe the processes.
+
+* Docker for BACPAC Machines
+
+The utility of Docker containers for BACPAC researchers working on the
+virtual machines is this:
+
+if you can set up your workflow on a Linux machine using pretty much
+arbitrary software, then you can build a Docker container on your
+local machine, upload it the BACPAC Data Portal, and run that workflow
+on a VM with access to the BACPAC Data.
+
+We have tried to anticipate your software needs, but if we failed, you
+can build a Docker container to get you where you need to go.  Please
+let me know if you need any help getting a Docker container for a
+particular use set up. It is part of what I am here for.
+
+Docker is a large, relatively complex, ecosystem of software. We can
+only scratch the surface here, but the surface is often all a Data
+Scientist or Analyst needs to exploit Docker effectively.
+
+* Brief Introduction to Docker and Dockerfiles
+
+A Dockerfile is just a textual-representation of the steps a user
+would perform in order to configure a particular operating system for
+work.
+
+Here is a simple example of a Docker file:
+
+#+CAPTION: A very simple Dockerfile called scilab.Dockerfile
+#+INCLUDE: "./scilab.Dockerfile" src Dockerfile
+
+We can build an image based on this Dockerfile like this:
+
+#+CAPTION: Building the Docker container.
+#+begin_src sh
+  docker build . -f scilab.Dockerfile -t scilab
+#+end_src
+
+And then we can run it:
+
+#+CAPTION: Building the Docker container.
+#+begin_src sh
+  docker run -it scilab
+#+end_src
+
+And this will start an interactive scilab shell "inside" the
+container.
+
+Its important to realize that the container isolate you from the
+operating system - by default, this scilab can't see any files outside
+of the container.
+
+If you have a very mature workflow, you may package source or
+executables that perform an analysis directly into the container:
+
+#+CAPTION: A very simple Dockerfile called scilab.Dockerfile
+#+INCLUDE: "./scilab2.Dockerfile" src Dockerfile
+
+#+CAPTION: Building the second Docker container.
+#+begin_src sh
+  docker build . -f scilab2.Dockerfile -t scilab2
+  docker run -t scilab2
+#+end_src
+
+But it is much more common among Data Scientist to simply mount your
+local directory as well as any data files in the container when you
+run it.
+
+#+CAPTION: Mounting our current directory /inside/ the container.
+#+begin_src sh  
+  docker run -v $(pwd):/home/rstudio/work -u rstudio -w /home/rstudio/work -t scilab
+  --> exec("hello.sl") # note that this runs the version of hello.sl in our working directory.
+#+end_src
+
+If we were running our Docker container on our Virtual Machine, we
+would also want to mount the container directory, like this:
+
+#+CAPTION: Mounting our current directory /inside/ the container.
+#+begin_src sh  
+  docker run \
+         -v /mnt/containers/project/Workshop_April2022/ashar_data:/mnt/containers/project/Workshop_April2022/ashar_data
+         -v $(pwd):/home/rstudio/work\
+         -u rstudio -w /home/rstudio/work -t scilab
+  --> exec("hello.sl") # note that this runs the version of hello.sl in our working directory.
+#+end_src
+
+Speaking of which - how can we get our containers onto the VMs?
+
+* How to get your Docker container onto the VM
+
+In the near future we will enable a Docker registry accessible from
+inside and outside of the Virtual Machines. When that happens you will
+be able to push an image you have built locally to the registry and
+pull it down inside your Virtual Machine.
+
+In the meantime, however, the easiest solution is to export your
+container after building it and upload it to your personal space. I'll
+use a very small image as an example, since otherwise the upload
+process can be challenging.
+
+#+CAPTION: exporting and zipping up a Docker image.
+#+begin_src sh
+  docker pull hello-world
+  docker save hello-world:latest | gzip > hello-world.tar.gz
+#+end_src
+
+#+CAPTION: Click the upload arrow in My Workspace.
+#+NAME: upload-a-file-docker
+[[./upload-a-file-docker.png]]
+
+#+CAPTION: Select the hello-world.tar.gz image.
+#+NAME: select-the-hello-world-image
+[[./select-the-hello-world-image.png]]
+
+On the virtual machine we simply write:
+
+#+begin_src bash
+  gunzip hello-world.tar.gz | docker image load
+  docker run -t hello-world
+#+end_src
+
+
+
