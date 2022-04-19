@@ -72,8 +72,11 @@ derived_data/clinical_outcomes-d3.csv: .created-dirs derived_data/clinical-outco
 # clustering easier. See "explain_encoding.R" for code which helps us
 # understand what these clusters represent.  Produce two targets here:
 # One with the normalized data (sdf) and one with the original data.
-derived_data/demographic_ae_sdf.csv derived_data/demographic_ae.csv: demographics-ae.py source_data/demographics.csv
+models/demographics-ae models/demographics-enc derived_data/normalized_demographics.csv: demographics-ae.py source_data/demographics.csv
 	python3 demographics-ae.py
+
+derived_data/demographic_ae_sdf.csv derived_data/demographic_ae.csv figures/demo-projection.png: demographic-clustering.py models/demographics-ae models/demographics-enc derived_data/normalized_demographics.csv
+	python3 demographic-clustering.py
 
 # Since our clustering is based on a variational auto-encoder it is
 # difficult to understand what the clusters represent.  Here we use
@@ -93,3 +96,8 @@ figures/outcomes_by_demographic_clustering.png: .created-dirs demo-outcomes.R de
 # dummy target to show a d3 visualization.
 d3-vis: derived_data/clinical_outcomes-d3.csv
 	python3 -m http.server 8888
+
+derived_data/meta-data.R: source_data/clinical_outcomes.csv source_data/demographics.csv gen-meta-data.R
+	Rscript gen-meta-data.R
+
+
