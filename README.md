@@ -26,6 +26,7 @@ information for interested participants.
 7. [Learn Docker in X Minutes](https://learnxinyminutes.com/docs/docker/)
 8. [Effect of Pain Reprocessing Therapy vs Placebo and Usual Care for Patients With Chronic Back Pain](https://jamanetwork.com/journals/jamapsychiatry/fullarticle/2784694)
 9. [VM Login Page](https://rdweb.wvd.microsoft.com/arm/webclient/index.html)
+
 # Visualization Workshop Schedule
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
@@ -52,36 +53,36 @@ information for interested participants.
 
 <tr>
 <td class="org-right">12:30-1:00</td>
-<td class="org-left">Work Time</td>
-</tr>
-
-
-<tr>
-<td class="org-right">1:00-1:30</td>
 <td class="org-left">Intoduction to the Container Hierarchy and Ashar data set</td>
 </tr>
 
 
 <tr>
+<td class="org-right">1:00-1:30</td>
+<td class="org-left">Work Time</td>
+</tr>
+
+
+<tr>
 <td class="org-right">1:30-2:00</td>
-<td class="org-left">Using the Statistical Environments and Adding your Own Software</td>
+<td class="org-left">Adding your Own Software</td>
 </tr>
 
 
 <tr>
 <td class="org-right">2:00-2:30</td>
-<td class="org-left">Free Work Time</td>
+<td class="org-left">Work Time</td>
 </tr>
 
 
 <tr>
-<td class="org-right">2:30-3:00</td>
+<td class="org-right">2:30-2:45</td>
 <td class="org-left">Tea Time</td>
 </tr>
 
 
 <tr>
-<td class="org-right">3:00-3:30</td>
+<td class="org-right">2:45-3:30</td>
 <td class="org-left">Docker Containers &amp; The VMs</td>
 </tr>
 
