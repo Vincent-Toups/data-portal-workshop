@@ -33,7 +33,7 @@ visualizations of the Ashar data set.
 The key to accessing the data portal is the "Data Access and
 Publication Request Form" which you or someone from your research
 group will fill out. After you submitted your DAPR requests, you
-should have been added to a project called "Workshop_April2022", which
+should have been added to a project called "~Workshop_April2022~", which
 will give you access to the data set we will be using in this project
 (the data set associated with the Ashar et al 2021 paper "Effect of
 Pain Reprocessing Therapy vs Placebo and Usual Care for Patients With
@@ -43,7 +43,7 @@ The [[https://unc.az1.qualtrics.com/CP/File.php?F=F_eVy3GPRAKK2sTFY][form]] is a
 via [[https://teams.microsoft.com/l/channel/19%3A1f17988f3f9d47019b45e7221b449e14%40thread.skype/tab%3A%3Aaf358994-7635-4498-af88-bc767bd20348?groupId=6633d7f4-6063-419d-ba64-99e9b9e87e75&tenantId=58b3d54f-16c9-42d3-af08-1fcabd095666][Teams]].
 
 You should all have filled this form out before this meeting and
-already have data portal access and access to the Workshop_April2022
+already have data portal access and access to the ~Workshop_April2022~
 Project.
 
 * The BACPAC Data Portal
@@ -83,7 +83,7 @@ variety of ways.
 
 A variety of standard meta-data is available for each data set. In
 addition, many data sets have custom meta-data fields which are
-controlled by me and allow you to search (for instance) for any data
+controlled by the DAC and allow you to search (for instance) for any data
 set which contains a particular column or column value (where
 confidentially allows us to expose that information).
 
@@ -97,6 +97,7 @@ often the value of which is a list.
 If you submit data to the Data Portal you may wish to let me know how
 best to generate meta-data or to send the meta-data fields you'd like
 to make searchable to me.
+
 * Project Space
 
 Each Data Access and Publication Request Form results in the creation
@@ -165,7 +166,7 @@ looking at a Windows Desktop.
 #+NAME: dog
 [[./dog.png]]
 
-#+CAPTION: RDWeb, your gateway to the BACPAC Virtual Machines.
+#+CAPTION: WVD (windows Virtual Desktop), your gateway to the BACPAC Virtual Machines.
 #+NAME: rd-web-opening-page
 [[./rd-web-opening-page.png]]
 
@@ -223,7 +224,7 @@ And you will be connected to your Virtual Machine's desktop.
 
 Regardless of the size of the VM you started, the setup of the Windows
 VM will be similar. The most important element is the location of the
-data. Let's navigate to C:/mnt/containers/ to see our personal,
+data. Let's navigate to ~C:/mnt/containers/~ to see our personal,
 project, and canonical data. For this tutorial we'll be working with
 the Ashar data in the project space created for this workshop.
 
@@ -266,11 +267,11 @@ to move things in and out of the data portal.
 On both linux and Windows these files are mounted in (more or less)
 the same location:
 
-/mnt/containers/
+~/mnt/containers/~
 
 or
 
-C:\mnt\containers\
+~C:\mnt\containers\~
 
 Within these directories are the personal, project, and canonical
 spaces.
@@ -425,7 +426,7 @@ general idea here is:
 
 But in practice making any specific piece of software work the way you
 want can be a little tricky. Setting up J on the Windows VM is just
-slightly non-trivial and so serves as a good use case.
+slightly non-trivial and so serves as a good example case.
 
 The first step is to download J for Windows. If possible, you want to
 download a "standalone" version of the software you need instead of an
@@ -467,6 +468,89 @@ Once I've got it into the VM, I can just start J and do some analysis:
 
 Believe it or not, this is unusually comprehensible J.
 
+* git On the Data Portal VMs
+** What/Why is Git
+
+Git is a version control system that many people use to organize their
+software development. It is also very useful for scientific analysis,
+since it can allow you to maintain a (very granular) history of the
+analysis code.
+
+The absolute least you need to know to use git are these commands:
+
+#+begin_src bash
+  git init # create a repository
+  git add <filename> # tell git you would like to record changes to
+  # this file in the next commmit
+  # you may make several "git adds" before a ...
+  git commit -m "I changed a file (ideally more explicit commit message)"
+  # record the change you "staged" above.
+  git push # send your commits to a remote repository
+  git fetch # fetch commits (perhaps made by others) into your local repository
+  git rebase <remote-name>/main
+  # try to integrate the fetched commits just fetched into your own code in a "polite" way.
+#+end_src
+
+I'd encourage everyone to use git if they working with code on the
+BACPAC Virtual Machines. Most people who want to share code these days
+use [[https://github.com][github]] for sharing repositories, but github is blocked by our
+firewall.
+
+The most reasonable way for users to share a common git repository is
+to create a repository on their shared project space. This can be done
+from either Linux or Windows and only needs to be done once:
+
+#+begin_src bash
+cd /c/mnt/containers/project/Workshop_April2022/
+git init --bare --initial-branch main my_cool_project
+#+end_src
+
+#+CAPTION: Initializing a bare git repository on Windows.
+#+NAME: init-bare-windows
+[[./init-bare-windows.png]]
+
+The "lead" of the project will typically initialize such a
+repository. That person, as well as everyone else who will contribute
+to the project, will clone this repository into their own personal
+space.
+
+That looks like this:
+
+#+begin_src bash
+  cd /mnt/containers/personal/vincentt51822/
+  git clone /c/mnt/containers/project/Workshop_April2022/my_cool_project
+#+end_src
+
+Once we've cloned the repository we can add some stuff to it and make
+a commit.
+
+#+begin_src bash
+  cd my_cool_project
+  touch README.md
+  git add README.md
+  git commit -m "I added (an empty) README."
+  git push
+#+end_src
+
+Now let's pretend to be someone else working on the project. Anyone
+else in the project will be able to access the copy of the repository
+in the project folder. Another user would do this from their VM but
+we'll just go to another directory to demonstrate.
+
+#+begin_src bash
+  cd /c/Users
+  git clone /c/mnt/containers/project/Workshop_April2022/my_cool_project
+#+end_src
+
+#+begin_src bash
+  cd /tmp
+  git clone /c/mnt/containers/project/Workshop_April2022/my_cool_project
+  cd my_cool_project
+  ls
+  README.md
+#+end_src
+
+<do some more demo>
 
 * What (and why) is Docker?
 Docker is a tool from the system's administrator's toolbox. It was
