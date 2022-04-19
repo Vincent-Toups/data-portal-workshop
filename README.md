@@ -6,6 +6,26 @@ And Visualization Jam
 This repository holds code and other materials for the April 2022
 Visualization Jam for the BACPAC Data Portal.
 
+The notes for the presentation (from which we may deviate) are in
+"script.pdf"
+
+Useful Links
+============
+
+This workshop covers a lot of ground and some subjects of interest are
+only covered superficially. These links provide more in depth
+information for interested participants. 
+
+1. [Data Portal User's Guide](https://adminliveunc.sharepoint.com/:w:/r/sites/BACPACResearchConsortium-DACDataPortal/Shared%20Documents/DAC%20Data%20Portal/DAC%20Developed%20Guides/BACPAC_Data_Portal_User_Guide.docx?d=w6cf27afda76e4613a6c02167a7e80ac2&csf=1&web=1&e=Dhapcj "Data Portal User's Guide")
+2. [The Data Portal](www.bacpacresearch.org)
+2. [This Repository](https://github.com/Vincent-Toups/data-portal-workshop "This Repository")
+3. [The Basics of the Linux Command Line](https://ubuntu.com/tutorials/command-line-for-beginners#1-overview)
+4. [The Git Book](https://git-scm.com/book/en/v2)
+5. [Learn Git in X Minutes](https://learnxinyminutes.com/docs/git/)
+6. [Docker Documentation](https://docs.docker.com/)
+7. [Learn Docker in X Minutes](https://learnxinyminutes.com/docs/docker/)
+8. [Effect of Pain Reprocessing Therapy vs Placebo and Usual Care for Patients With Chronic Back Pain](https://jamanetwork.com/journals/jamapsychiatry/fullarticle/2784694)
+9. [VM Login Page](https://rdweb.wvd.microsoft.com/arm/webclient/index.html)
 # Visualization Workshop Schedule
 
 <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
