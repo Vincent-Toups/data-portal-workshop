@@ -15,8 +15,9 @@ for(i in clusters){
     so <- summary(model);
     var <- so$var[1:4]
     sdf <- df %>% filter(in_cluster)
-    cluster_label <- sprintf("Cluster %f: %s(%f), %s(%f), %s(%f), %s(%f)",
+    cluster_label <- sprintf("Cluster %d (n=%d): %s(%f), %s(%f), %s(%f), %s(%f)",
                              i,
+                             nrow(sdf),
                              var[1], median(sdf[var[1]] %>% pull(1)),
                              var[2], median(sdf[var[2]] %>% pull(1)),
                              var[3], median(sdf[var[3]] %>% pull(1)),

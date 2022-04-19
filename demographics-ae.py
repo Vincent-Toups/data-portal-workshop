@@ -109,33 +109,11 @@ def build_vae(data_columns=ae_columns,
 
     return (ae,encoder)
 
-early_stopper = keras.callbacks.EarlyStopping(monitor='loss', patience=500, min_delta=0.001);
-
 (ae, enc) = build_vae();
-ae.fit(sdf, sdf, epochs=15000, batch_size=25, shuffle=True, verbose=2);
+ae.fit(sdf, sdf, epochs=30000, batch_size=25, shuffle=True, verbose=2);
 
-proj = pd.DataFrame(enc.predict(sdf),columns=['AE1','AE2'])
+sdf.to_csv("derived_data/normalized_demographics.csv", index=False);
+ae.save("models/demographics-ae")
+enc.save("models/demographics-enc")
 
-sc = SpectralClustering(n_clusters=6);
-proj['cluster'] = sc.fit_predict(proj);
-
-
-plt = (ggplot(proj,aes('AE1','AE2')) + geom_point(aes(color="factor(cluster)")));
-plt.save("figures/demo-projection.png")
-
-data['cluster'] = proj['cluster'];
-data['AE1'] = proj['AE1'];
-data['AE2'] = proj['AE2'];
-
-sdf['cluster'] = proj['cluster'];
-sdf['AE1'] = proj['AE1'];
-sdf['AE2'] = proj['AE2'];
-
-
-sdf.to_csv("derived_data/demographic_ae_sdf.csv", index=False)
-
-#demographic_reduction 
-
-demographic_ae = (data >> select(X.id, X.AE1, X.AE2, X.cluster));
-demographic_ae.to_csv("derived_data/demographic_ae.csv", index=False);
 

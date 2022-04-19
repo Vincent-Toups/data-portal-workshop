@@ -42,7 +42,7 @@ times <- tibble(redcap_event_name=useful_events, time=seq(length(useful_events))
 
 df <- df %>% inner_join(times, by="redcap_event_name");
 
-big_enoughs <- df %>% group_by(demographic_cluster) %>% tally() %>% filter(n>50) %>% pull(demographic_cluster);
+big_enoughs <- (demo %>% group_by(demographic_cluster) %>% tally() %>% arrange(desc(n)) %>% pull(demographic_cluster))[1:4]
 
 df <- df %>% filter(demographic_cluster %in% big_enoughs);
 
@@ -58,7 +58,8 @@ the_plot <- ggplot(group_sums, aes(time, mean_bpi)) +
                   color=factor(group_name))) +
     geom_errorbar(aes(x=time, ymin=mean_bpi-sd_bpi/2, ymax=mean_bpi+sd_bpi/2,
                       group=factor(group_name),
-                      color=factor(group_name))) +
-    facet_wrap(~demographic_cluster_name);
+                      color=factor(group_name)),
+                  width=0.3) +
+    facet_wrap(~demographic_cluster_name,nrow=length(big_enoughs));
 
 ggsave("figures/outcomes_by_demographic_clustering.png", the_plot);
