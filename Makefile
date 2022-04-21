@@ -1,5 +1,6 @@
 .PHONY: clean
 .PHONY: d3-vis
+.PHONY: demo-ae-vis
 
 clean:
 	rm -rf models
@@ -53,18 +54,25 @@ derived_data/clinical-outcomes-with-clustering.csv\
 # interesting and the AE projection is just (roughly) back pain
 # intensity.
 # Note this uses a sentinal value because we produce many scripts.
-sentinels/cluster-plots.txt: .created-dirs derived_data/clinical-outcomes-with-clustering.csv cluster-plots.R
+sentinels/cluster-plots.txt: .created-dirs\
+ derived_data/clinical-outcomes-with-clustering.csv\
+ cluster-plots.R
 	Rscript cluster-plots.R
 
 # Similar to above.
-sentinels/boxplots.txt: .created-dirs source_data/clinical_outcomes.csv box-scatters.R
+sentinels/boxplots.txt: .created-dirs\
+ source_data/clinical_outcomes.csv\
+ box-scatters.R
 	Rscript box-scatters.R
 
 
 # Augment the clinical outcomes data (with its AE projection) with
 # time points so that we can view them in a d3 visualization. Not
 # useful.
-derived_data/clinical_outcomes-d3.csv: .created-dirs derived_data/clinical-outcomes-with-clustering.csv augment-with-experimental-time.R derived_data/demographic_ae.csv
+derived_data/clinical_outcomes-d3.csv: .created-dirs\
+ derived_data/clinical-outcomes-with-clustering.csv\
+ augment-with-experimental-time.R\
+ derived_data/demographic_ae.csv
 	Rscript augment-with-experimental-time.R
 
 # Train a (variational) auto-encoder for demographic data. This allows
@@ -72,10 +80,14 @@ derived_data/clinical_outcomes-d3.csv: .created-dirs derived_data/clinical-outco
 # clustering easier. See "explain_encoding.R" for code which helps us
 # understand what these clusters represent.  Produce two targets here:
 # One with the normalized data (sdf) and one with the original data.
-models/demographics-ae models/demographics-enc derived_data/normalized_demographics.csv: demographics-ae.py source_data/demographics.csv
+models/demographics-ae models/demographics-enc derived_data/normalized_demographics.csv: demographics-ae.py\
+ source_data/demographics.csv
 	python3 demographics-ae.py
 
-derived_data/demographic_ae_sdf.csv derived_data/demographic_ae.csv figures/demo-projection.png: demographic-clustering.py models/demographics-ae models/demographics-enc derived_data/normalized_demographics.csv
+derived_data/demographic_ae_sdf.csv derived_data/demographic_ae.csv figures/demo-projection.png: demographic-clustering.py\
+ models/demographics-ae\
+ models/demographics-enc\
+ derived_data/normalized_demographics.csv
 	python3 demographic-clustering.py
 
 # Since our clustering is based on a variational auto-encoder it is
@@ -90,12 +102,19 @@ derived_data/cluster_labels.csv: .created-dirs explain_encoding.R derived_data/d
 # Produce a figure which shows the clinical outcomes for our
 # demographic clusters. Use the labels we calculated above to make the
 # results comprehensible.
-figures/outcomes_by_demographic_clustering.png: .created-dirs demo-outcomes.R derived_data/clinical-outcomes-with-clustering.csv derived_data/cluster_labels.csv derived_data/demographic_ae.csv
+figures/outcomes_by_demographic_clustering.png: .created-dirs\
+ demo-outcomes.R\
+ derived_data/clinical-outcomes-with-clustering.csv\
+ derived_data/cluster_labels.csv\
+ derived_data/demographic_ae.csv
 	Rscript demo-outcomes.R
 
 # dummy target to show a d3 visualization.
 d3-vis: derived_data/clinical_outcomes-d3.csv
 	python3 -m http.server 8888
+
+demo-ae-vis:
+	lighttpd -D -f lighttpd.conf
 
 derived_data/meta-data.R: source_data/clinical_outcomes.csv source_data/demographics.csv gen-meta-data.R
 	Rscript gen-meta-data.R
