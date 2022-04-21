@@ -15,7 +15,7 @@ useful_events <- c("baseline",
                    "6_month_follow_up_arm_1",
                    "12_month_follow_up_arm_1");
 
-times <- tibble(redcap_event_name=useful_events, time=seq(length(useful_events)));
+times <- tibble(redcap_event_name=useful_events, time=c(-1,0,1,2,3,6,12));
 
 df <- df %>% inner_join(times, by="redcap_event_name");
 
