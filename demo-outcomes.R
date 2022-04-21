@@ -38,7 +38,7 @@ useful_events <- c("baseline",
                    "6_month_follow_up_arm_1",
                    "12_month_follow_up_arm_1");
 
-times <- tibble(redcap_event_name=useful_events, time=seq(length(useful_events)));
+times <- tibble(redcap_event_name=useful_events, time=c(-1,0,1,2,3,6,12));
 
 df <- df %>% inner_join(times, by="redcap_event_name");
 
@@ -60,6 +60,8 @@ the_plot <- ggplot(group_sums, aes(time, mean_bpi)) +
                       group=factor(group_name),
                       color=factor(group_name)),
                   width=0.3) +
-    facet_wrap(~demographic_cluster_name,nrow=length(big_enoughs));
+    facet_wrap(~demographic_cluster_name,nrow=2) +
+    labs(title="Ashar data by unsupervised demographic clustering.") +
+    theme(strip.text.x = element_text(size = 6));
 
 ggsave("figures/outcomes_by_demographic_clustering.png", the_plot);
