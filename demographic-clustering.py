@@ -18,16 +18,19 @@ enc = keras.models.load_model("models/demographics-enc");
 data = pd.read_csv("source_data/demographics.csv");
 
 
-proj = pd.DataFrame(enc.predict(sdf),columns=['AE1','AE2']) >> mutate(outlier = X.AE2 > 2);
+proj = pd.DataFrame(enc.predict(sdf),columns=['AE1','AE2']) >> mutate(outlier = X.AE2 > 2,
+                                                                      ix = list(range(sdf.shape[0])));
+
 proj_main = proj >> mask(~X.outlier) >> drop(X.outlier);
-proj_out = proj >> mask(X.outlier) >> drop(X.outlier);
+proj_outliers = proj >> mask(X.outlier) >> drop(X.outlier);
 
 
 sc = SpectralClustering(n_clusters=n_clus_main);
-proj_main['cluster'] = sc.fit_predict(proj_main);
-proj_out = proj_out >> mutate(cluster=n_clus_main);
+proj_main['cluster'] = sc.fit_predict(proj_main >> select(X.AE1, X.AE2));
+proj_outliers = proj_outliers >> mutate(cluster=n_clus_main);
 
-proj = pd.concat([proj_main, proj_out])
+proj = pd.concat([proj_main, proj_outliers]) >> arrange(X.ix) >> drop(X.ix);
+
 
 plt = (ggplot(proj,aes('AE1','AE2')) + geom_point(aes(color="factor(cluster)")));
 plt.save("figures/demo-projection.png")
