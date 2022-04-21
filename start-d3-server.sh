@@ -1,1 +1,2 @@
-docker run -p 8888:8888 -v $(pwd):/home/rstudio/work --workdir /home/rstudio/work ashar make d3-vis
+docker run -p 8888:8888 -v $(pwd):/home/rstudio/work --workdir /home/rstudio/work -d -t ashar make demo-ae-vis
+firefox http://locahost:8888/demo-ae-vis.html
