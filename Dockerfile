@@ -14,4 +14,4 @@ RUN pip3 install matplotlib seaborn
 RUN pip3 install hy
 RUN Rscript --no-restore --no-save -e "install.packages('gbm')"
 RUN Rscript --no-restore --no-save -e "install.packages('r2d3')"
-
+RUN apt update && apt install -y lighttpd
