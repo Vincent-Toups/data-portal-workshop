@@ -61,7 +61,7 @@ the_plot <- ggplot(group_sums, aes(time, mean_bpi)) +
                       color=factor(group_name)),
                   width=0.3) +
     facet_wrap(~demographic_cluster_name,nrow=2) +
-    labs(title="Ashar data by unsupervised demographic clustering.") +
+    labs(title="Ashar data by (semi)-supervised demographic clustering.") +
     theme(strip.text.x = element_text(size = 6));
 
 ggsave("figures/outcomes_by_demographic_clustering.png", the_plot);

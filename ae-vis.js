@@ -1,4 +1,4 @@
-import * as d3 from "https://cdn.skypack.dev/d3@7";
+import * as d3 from "./d3@7";
 
 const svg_element = d3.selectAll("#vis");
 const numerical_columns = "id group pain_avg bpi_intensity bpi_interference odi promis_dep promis_anger promis_anxiety promis_sleep panas_pa panas_na pcs tsk11 sopa_emo pgic tx_satisfaction alcohol opioid cannabis AE1 AE2 cluster time demographic_cluster".split(" ");

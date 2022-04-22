@@ -113,7 +113,7 @@ figures/outcomes_by_demographic_clustering.png: .created-dirs\
 d3-vis: derived_data/clinical_outcomes-d3.csv
 	python3 -m http.server 8888
 
-demo-ae-vis:
+demo-ae-vis: derived_data/clinical_outcomes-d3.csv 
 	lighttpd -D -f lighttpd.conf
 
 derived_data/meta-data.R: source_data/clinical_outcomes.csv source_data/demographics.csv gen-meta-data.R

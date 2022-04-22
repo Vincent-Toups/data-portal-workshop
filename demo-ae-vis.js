@@ -67,6 +67,8 @@ const label_ethnitities = (a) => a.map(a => a === 1 ? "Nat.Am./Al" :
                                        a === 4 ? "Wht" :
                                        a === 5 ? "Other" : "Other");
 
+const label_nonwhite = (a) => a.map(e => e === 4 ? "White" : "Nonwhite")
+
 const label_hispanic = (a) => a.map(h => h === 1 ? "Hsp" : "NonHsp");
 const label_married = (a) => a.map(m => m === 1 ? "Mrd" : "NonMrd");
 const label_gender = (a) => a.map(g => g === 1 ? "Male" :
@@ -101,7 +103,7 @@ const outside_in = (data) => {
         keys.forEach(k => element[k] = data[k][i]);
         out.push(element);
     }
-    return outside_in;
+    return out;
 }
 
 const tidy_demo_data = (data) => {
@@ -120,14 +122,55 @@ const tidy_demo_data = (data) => {
     out.weight = norm(iodata.weight);
     out.gender = label_gender(iodata.gender);
     out.backpain_length = norm(iodata.backpain_length);
+    out.nonwhite = label_nonwhite(iodata.ethnicity);
     return outside_in(out);
 }
 
-// const demo_variables = "id,group,education,ethnicity,hispanic,employment_status,exercise,handedness,sses,married_or_living_as_marri,age,weight,gender,backpain_length".split(",")
+const demographic_variables = ['gender','married_or_living_as_marri','sses','non_white']
 
-// const draw_demographic_average = (svg_selection, demo_data, ids_tbl) => {
-    
-// }
+const to_color = n => {
+    const x = Math.round((1-n)*255);
+    return "rgb("+[x,x,x].join(",")+")"
+}
+
+const draw_demographic_average = (svg_selection, demo_data, filter) => {
+    const gender_count = {male:0,female:0};
+    const married_count = {married:0,unmarried:0}
+    let sses_average = 0;
+    const nonwhite = {nonwhite:0, white:0};
+    let n = 0;
+    demo_data.forEach(d => {
+        if(filter(d)){            
+            if(d.gender==="Male") gender_count["male"]++;
+            if(d.gender==="Female") gender_count["female"]++;
+            sses_average += d.sses;
+            if(d.nonwhite==="Nonwhite") nonwhite["nonwhite"]++;
+            if(d.nonwhite==="White") nonwhite["white"]++;
+            if(d.married_or_living_as_marri==="Mrd") married_count["married"]++;
+            if(d.married_or_living_as_marri==="NonMrd") married_count["unmarried"]++;
+            n++;
+        }
+    });
+    gender_count.male = gender_count.male / n;
+    gender_count.female = gender_count.female / n;
+    married_count.married = married_count.married / n;
+    married_count.unmarried = married_count.unmarried / n;
+    sses_average = sses_average/n;
+    nonwhite.nonwhite = nonwhite.nonwhite / n;
+    nonwhite.white = nonwhite.white / n;
+
+    svg_selection.select("#gender_male").attr("fill",to_color(gender_count.male))
+    svg_selection.select("#gender_female").attr("fill",to_color(gender_count.female))
+
+    svg_selection.select("#married_yes").attr("fill",to_color(married_count.married))
+    svg_selection.select("#married_no").attr("fill",to_color(married_count.unmarried))
+
+    svg_selection.select("#nonwhite").attr("fill",to_color(nonwhite.nonwhite))
+    svg_selection.select("#white").attr("fill",to_color(nonwhite.white))
+
+    svg_selection.select("#sses").attr("width",sses_average*360);
+
+}
 
 const to_average = x => x.reduce((a,b) => a+b)/x.length
 
@@ -220,6 +263,8 @@ const main = (data) => {
     const proj_h = 400;
     const out_w = 400;
     const out_h = 200;
+    const demo_w = 400;
+    const demo_h = 200;
 
     demo_ae.forEach(d => selected_ids[d] = true);
 
@@ -313,7 +358,55 @@ const main = (data) => {
     d3.select("body").append("svg")
         .attr("id","demographics")
         .attr("width",400)
-        .attr("height",200);
+        .attr("height",200)
+        .attr("viewBox",to_viewbox(0,0,400,200));
+    const demo_svg = d3.select("#demographics");
+
+    const rect_data = [
+        {id:"gender_male",row:0,col:0},
+        {id:"gender_female",row:0,col:1},
+        {id:"married_yes",row:1, col:0},
+        {id:"married_no",row:1, col:1},
+        {id:"nonwhite",row:2,col:0},
+        {id:"white",row:2,col:1},
+        {id:"sses",row:3,col:0,width:0}
+    ]
+    
+    demo_svg.selectAll("rect")
+        .data(rect_data)
+        .join("rect")
+        .attr("id", d => d.id)
+        .attr("x",  d => 20 + d.col*80)
+        .attr("y",  d => 20 + d.row*(35+12))
+        .attr("height", d => 35)
+        .attr("width", d => d.width || 80)
+        .attr("stroke","black")
+        .attr("fill","white")
+
+    const label_data = [
+        {text:"Male",row:0,col:0},
+        {text:"Female",row:0,col:1},
+
+        {text:"Married",row:1,col:0},
+        {text:"Unmarried",row:1,col:1},
+        
+        {text:"Nonwhite",row:2,col:0},
+        {text:"White",row:2,col:1},
+
+        {text:"Socioeconomic Status",row:3,col:0}
+    ];
+
+    demo_svg.selectAll("text")
+        .data(label_data)
+        .join("text")
+        .text(d => d.text)
+        .attr("x",  d => 20 + d.col*80)
+        .attr("y",  d => 17 + d.row*(35+12))
+        .attr("stroke","black")
+        .attr("fill","black")
+        .attr("style","font: italic 10px sans-serif")
+
+    
 
     d3.select("body").append("svg")
         .attr("id","outcomes")
@@ -330,6 +423,7 @@ const main = (data) => {
 
     draw_demo_points(d3.select("#projection"), demo_ae, selected_ids, px, py);
     draw_outcomes(outcomes_svg, outcomes, selected_ids, ox, oy);
+    draw_demographic_average(demo_svg, demo_tidy, d => selected_ids[d.id]);
 
     function brushed({selection}){
         if(selection){
@@ -342,6 +436,7 @@ const main = (data) => {
             selected_ids = get_brushed(demo_ae, x0, y0, x1, y1);
             draw_demo_points(projection_svg, demo_ae, selected_ids, px, py);
             draw_outcomes(outcomes_svg, outcomes, selected_ids, ox, oy);
+            draw_demographic_average(demo_svg, demo_tidy, d => selected_ids[d.id]);
         }
     }
 }
