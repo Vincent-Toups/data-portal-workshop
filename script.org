@@ -1,4 +1,3 @@
-
 #+TITLE: Notes for the BACPAC Data Portal Workshop
 #+AUTHOR: Vincent Toups
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="style.css" />
@@ -180,7 +179,7 @@ We click "remote desktop" and then log in:
 
 #+CAPTION: Log in with your special "profile" credentials.
 #+NAME: log-in-1
-[[./log-in-1.png]]
+[[./script-images/log-in-1.png]]
 
 Click "show options"
 
@@ -545,7 +544,7 @@ then copied it into my VM.
 
 #+CAPTION: Uploading a zip of my J directories.
 #+NAME: upload-j908-bundle
-[[./upload-j908-bundle.png]]
+[[./script-images/upload-j908-bundle.png]]
 
 
 Once I've got it into the VM, I can just start J and do some analysis:
