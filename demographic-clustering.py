@@ -34,6 +34,7 @@ proj = pd.concat([proj_main, proj_outliers]) >> arrange(X.ix) >> drop(X.ix);
 
 plt = (ggplot(proj,aes('AE1','AE2')) + geom_point(aes(color="factor(cluster)")));
 plt.save("figures/demo-projection.png")
+plt.save("figures/demo-projection.svg")
 
 data['cluster'] = proj['cluster'];
 data['AE1'] = proj['AE1'];

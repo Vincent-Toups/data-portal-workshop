@@ -84,7 +84,7 @@ models/demographics-ae models/demographics-enc derived_data/normalized_demograph
  source_data/demographics.csv
 	python3 demographics-ae.py
 
-derived_data/demographic_ae_sdf.csv derived_data/demographic_ae.csv figures/demo-projection.png: demographic-clustering.py\
+derived_data/demographic_ae_sdf.csv derived_data/demographic_ae.csv figures/demo-projection.png figures/demo-projection.svg: demographic-clustering.py\
  models/demographics-ae\
  models/demographics-enc\
  derived_data/normalized_demographics.csv
@@ -102,7 +102,7 @@ derived_data/cluster_labels.csv: .created-dirs explain_encoding.R derived_data/d
 # Produce a figure which shows the clinical outcomes for our
 # demographic clusters. Use the labels we calculated above to make the
 # results comprehensible.
-figures/outcomes_by_demographic_clustering.png: .created-dirs\
+figures/outcomes_by_demographic_clustering.png figures/outcomes_by_demographic_clustering.svg: .created-dirs\
  demo-outcomes.R\
  derived_data/clinical-outcomes-with-clustering.csv\
  derived_data/cluster_labels.csv\

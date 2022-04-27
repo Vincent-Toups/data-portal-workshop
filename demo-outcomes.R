@@ -65,3 +65,5 @@ the_plot <- ggplot(group_sums, aes(time, mean_bpi)) +
     theme(strip.text.x = element_text(size = 6));
 
 ggsave("figures/outcomes_by_demographic_clustering.png", the_plot);
+ggsave("figures/outcomes_by_demographic_clustering.svg", the_plot);
+
