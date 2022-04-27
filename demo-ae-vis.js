@@ -2,26 +2,51 @@ const get_bounds = (keys, data) => {
     const bounds = {};
     bounds.min = {};
     bounds.max = {};
-    keys.forEach(k => {bounds.min[k] = Infinity; bounds.max[k] = -Infinity})
+    bounds.avg = {};
+    keys.forEach(k => {bounds.min[k] = Infinity;
+                       bounds.max[k] = -Infinity;
+                       bounds.avg[k] = 0;})
+    const n = data.length;
     data.forEach(pt => {
         keys.forEach(k => {
             if(pt[k] < bounds.min[k]) bounds.min[k] = pt[k];
             if(pt[k] > bounds.max[k]) bounds.max[k] = pt[k];
+            bounds.avg[k] += pt[k];
         })
     })
-    return bounds;
-    
+    keys.forEach(k => {
+        bounds.avg[k] = bounds.avg[k]/n;
+    })
+    return bounds;    
+}
+
+const tally = function(keys, data){
+    const counts = {};
+    keys.forEach(k => counts[k] = {});
+    data.forEach(d => keys.forEach(k => {
+        const counts_at = counts[k];
+        const val = d[k];
+        const val_count = (counts_at[val] || 0) + 1;
+        counts_at[val] = val_count;
+    }))
+    return counts;
 }
 
 const to_viewbox = (xmin, ymin, xmax, ymax) =>  [xmin, ymin, xmax, ymax].join(" ")
 
-const draw_demo_points = (svg_selection, data, selected, x, y) => {
+const cluster_colors = ["red","green","blue","cyan","magenta"];
+const cluster_to_color = c => cluster_colors[c];
+
+const draw_demo_points = (svg_selection, data, selected) => {
+    const x = svg_selection.x;
+    const y = svg_selection.y;
     svg_selection.selectAll("circle")
         .data(data)
         .join("circle")
         .attr("transform", d => `translate(${x(d.AE1)},${y(d.AE2)})`)
         .attr("r", 3)
-        .attr("fill", d => selected[d.id] ? "red" : "gray")
+        .attr("stroke", d => selected[d.id] ? "red" : "gray")
+        .attr("fill", d => cluster_to_color(d.cluster))
         .attr("subjid", d => d.id);
 }
 
@@ -61,7 +86,7 @@ const reduce_keys = (data, keys, f, init, filter) => {
     return [n,state];    
 }
 
-const label_ethnitities = (a) => a.map(a => a === 1 ? "Nat.Am./Al" :
+const label_ethnicities = (a) => a.map(a => a === 1 ? "Nat.Am./Al" :
                                        a === 2 ? "Asn/Pac.Isl." :
                                        a === 3 ? "Blk" :
                                        a === 4 ? "Wht" :
@@ -74,6 +99,7 @@ const label_married = (a) => a.map(m => m === 1 ? "Mrd" : "NonMrd");
 const label_gender = (a) => a.map(g => g === 1 ? "Male" :
                                   g === 2 ? "Female" :
                                   g === 3 ? "Other" : "Other");
+const label_handedness = (a) => a.map(h => h === 1 ? "R" : h === 2 ? "L" : "A")
 
 const norm = (a) => {
     let the_min = Infinity;
@@ -110,23 +136,46 @@ const tidy_demo_data = (data) => {
     const iodata = inside_out(data);
     const out = [];
     out.id = iodata.id;
-    out.education = norm(iodata.education);
-    out.ethnicity = label_ethnitities(iodata.ethnicity);
+    out.education = (iodata.education);
+    out.ethnicity = label_ethnicities(iodata.ethnicity);
     out.hispanic = label_hispanic(iodata.hispanic);
-    out.employment_status = norm(iodata.employment_status);
-    out.exercise = norm(iodata.exercise);
-    out.handedness = norm(iodata.handedness);
-    out.sses = norm(iodata.sses);
+    out.employment_status = (iodata.employment_status);
+    out.exercise = (iodata.exercise);
+    out.handedness = label_handedness(iodata.handedness);
+    out.sses = (iodata.sses);
     out.married_or_living_as_marri = label_married(iodata.married_or_living_as_marri);
-    out.age = norm(iodata.age);
-    out.weight = norm(iodata.weight);
+    out.age = (iodata.age);
+    out.weight = (iodata.weight);
     out.gender = label_gender(iodata.gender);
-    out.backpain_length = norm(iodata.backpain_length);
+    out.backpain_length = (iodata.backpain_length);
     out.nonwhite = label_nonwhite(iodata.ethnicity);
     return outside_in(out);
 }
-
+ 
 const demographic_variables = ['gender','married_or_living_as_marri','sses','non_white']
+
+const demographic_variable_specs = (()=>{
+    const v = {
+        education:{type:"numerical", order:0},
+        ethnicity:{type:"categorical", order:1},
+        hispanic:{type:"categorical", order:2},
+        gender:{type:"categorical", order:3},
+        employment_status:{type:"numerical", order:4},
+        exercise:{type:"numerical", order:5},
+        handedness:{type:"categorical", order:6},
+        sses:{type:"numerical",label:"SSES", order:7},
+        married_or_living_as_marri:{type:"categorical",label:"Marital Status", order:8},
+        age:{type:"numerical", order:9},
+        weight:{type:"numerical", order:10},
+        backpain_length:{type:"numerical", order:11},
+    };
+    return Object.keys(v).map(k => {
+        const val = v[k];
+        val.column = k;
+        return val;
+    });
+})();
+
 
 const to_color = n => {
     const x = Math.round((1-n)*255);
@@ -155,7 +204,7 @@ const draw_demographic_average = (svg_selection, demo_data, filter) => {
     gender_count.female = gender_count.female / n;
     married_count.married = married_count.married / n;
     married_count.unmarried = married_count.unmarried / n;
-    sses_average = sses_average/n;
+    sses_average = n === 0 ? 0 : sses_average/n;
     nonwhite.nonwhite = nonwhite.nonwhite / n;
     nonwhite.white = nonwhite.white / n;
 
@@ -216,15 +265,15 @@ const split = (data, mapper) => {
 
 const group_to_color = (group) => ({"G1":"RED","G2":"GREEN","G3":"BLUE"})[group];
 
-const draw_outcomes = (svg_selection, outcome_data, selected, x, y) => {
-    console.log(outcome_data)
+const draw_outcomes = (svg_selection, outcome_data, selected) => {
+    const x = svg_selection.x;
+    const y = svg_selection.y;
     const adata = average_outcomes_by_group(outcome_data, 'bpi_intensity', d => selected[d.id])
     const by_group = split(adata, d => "G"+d.group);
     Object.keys(by_group).forEach(group => {
         const line = d3.line()
               .x(d => x(d.time))
               .y(d => y(d.bpi_intensity));
-        console.log(line(by_group[group]))
         svg_selection
             .select("#"+group)        
             .attr("d",line(by_group[group]))
@@ -233,7 +282,6 @@ const draw_outcomes = (svg_selection, outcome_data, selected, x, y) => {
 }
 
 const get_brushed = (data,x0,y0,x1,y1) => {
-    console.log(x0, y0, x1, y1)
     const out = {};
     let i = 0;
     data.forEach(pt => {
@@ -246,11 +294,171 @@ const get_brushed = (data,x0,y0,x1,y1) => {
             out[pt.id] = false;
         }
     });
-    console.log(`count: ${i}`)
     return out;
 }
 
+const setup_svg_with_axis = (location, id, data, x, y, margin, size) => {
+    const {top, right, bottom, left} = margin;
+    const {width, height} = size;
+    const x_scale = d3.scaleLinear()
+          .domain(d3.extent(data, d=>d[x])).nice()
+          .range([left, width - right]);
+    const y_scale = d3.scaleLinear()
+          .domain(d3.extent(data, d => d[y])).nice()
+          .range([height-bottom, top]);
+    const the_svg = d3.select(location).append("svg");
+    the_svg.attr("id",id)
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", to_viewbox(0,0,width,height));
+    the_svg.x = x_scale;
+    the_svg.y = y_scale;
+    the_svg.margin = margin;
+    the_svg.append("g")
+        .attr("id",id+"_x")
+        .attr("transform", `translate(0,${height-bottom})`)
+        .call(d3.axisBottom(x_scale))
+        .call(g => g.select(".domain").remove())
+        .call(g => g.append("text")
+              .attr("x", width - right)
+              .attr("y", -4)
+              .attr("fill","#000")
+              .attr("font-weight","bold")
+              .attr("text-anchor", "end")
+              .text(x));
+    the_svg.append("g")
+        .attr("id",id+"_y")
+        .attr("transform",`translate(${left},0)`)
+        .call(d3.axisLeft(y_scale))
+        .call(g => g.select(".domain").remove())
+        .call(g => g.select(".tick:last-of-type text").clone()
+              .attr("x",4)
+              .attr("text-anchor","start")
+              .attr("font-weight","bold")
+              .text(y));
+    return the_svg;
+}
+
+const setup_demographics_svg = (location, id, data, spec, margin, size) => {
+    const {top, right, bottom, left} = margin;
+    const {width, height} = size;
+    spec = spec.filter(d => !d.supress);
+    const n = spec.length;
+    const n_slots = n*2;
+    const subrect_height = (height - (top+bottom))/n_slots;
+    const y_increment = subrect_height*2;
+
+    const numerical_bounds = get_bounds(spec.filter(d => d.type === "numerical").map(d=>d.column), data);
+    const tallies = tally(spec.filter(d => d.type === "categorical").map(d=>d.column), data);
+    
+    const the_svg = d3.select(location).append("svg")
+          .attr("id", id)
+          .attr("width", width)
+          .attr("height", height)
+          .attr("viewBox", to_viewbox(0,0,width,height));
+    the_svg.selectAll("g")
+        .data(spec)
+        .join("g")
+        .attr("id", d => id + "_" + d.column)
+        .attr("transform",d => `translate(${left}, ${top + d.order*y_increment})`)
+        .each(function(d,i) {
+            console.log(i);
+            d3.select(this)
+                .append("text")
+                .text(d.label || d.column)
+                .style("font-size",Math.floor(subrect_height)+"px");
+            console.log(d.type);
+            const rect_offset = Math.floor(subrect_height/2)-5;
+            if(d.type==="numerical"){
+                const mn = numerical_bounds.min[d.column];
+                const mx = numerical_bounds.max[d.column];
+                const avg = numerical_bounds.avg[d.column];
+                const rect_width = (width-(left+right))*((avg-mn)/(mx-mn));                
+                d3.select(this)
+                    .append("rect")
+                    .attr("id", d.column + "_rect")
+                    .attr("x",0)
+                    .attr("y",rect_offset)
+                    .attr("width",rect_width)
+                    .attr("height",Math.floor(subrect_height))
+                    .attr("stroke","black")
+                    .attr("fill","white")
+                d3.select(this)
+                    .append("text")
+                    .attr("id",d.column+"_number")
+                    .style("font-size",Math.floor(subrect_height*0.75)+"px")
+                    .text(`(${Math.round(avg*100)/100})`)
+                    .attr("transform",`translate(${rect_width + 3},${Math.floor(subrect_height/2)+7})`)
+                
+            } else {
+                const counts = tallies[d.column];
+                const categories = Object.keys(counts).sort();
+                const total = categories.reduce((acc, it) => acc + counts[it],0);
+                let x = 0;
+                categories.forEach(cat => {
+                    const g = d3.select(this).append("g").attr("transform",`translate(${x},${rect_offset + Math.floor(subrect_height*0.75)})`);
+                    const txt = g.append("text").text(cat + ":: ").style("font-size",Math.floor(subrect_height*0.75)+"px");
+                    const bb = txt.node().getBBox();
+                    // const n = g.append("text").text(`:: ${counts[cat]},   `)
+                    //       .style("font-size",Math.floor(subrect_height*0.75)+"px")
+                    //       .attr("transform",`translate(${bb.width})`);
+                    const tiny_rect = g.append("rect")
+                          .attr("id",d.column + "_" + id_sanitize(cat))
+                          .attr("transform",`translate(${bb.width},-${Math.floor(subrect_height*0.75)})`)
+                          .attr("width",20)
+                          .attr("height",Math.floor(subrect_height*0.75))
+                          .attr("fill", to_color(counts[cat]/total))
+                          .attr("stroke", "black")
+                    x = x + g.node().getBBox().width + 3;
+                });
+            }
+        })
+    return the_svg;
+}
+
+const id_sanitize = id => id.replaceAll(/[^a-zA-Z]/ig,"_")
+
+
+const update_demographic_svg = (the_svg, raw_data, spec, margin, size, filter_func) => {
+    const {top, right, bottom, left} = margin;
+    const {width, height} = size;
+    const filt_data = raw_data.filter(filter_func);
+    spec = spec.filter(d => !d.supress);
+    const n = spec.length;
+    const n_slots = n*2;
+    const subrect_height = (height - (top+bottom))/n_slots;
+    const raw_numerical_bounds = get_bounds(spec.filter(d => d.type === "numerical").map(d=>d.column), raw_data);
+    const numerical_bounds = get_bounds(spec.filter(d => d.type === "numerical").map(d=>d.column), filt_data);
+    const tallies = tally(spec.filter(d => d.type === "categorical").map(d=>d.column), filt_data);
+    const {numerical, categorical} = split(spec, s => s.type);
+    
+    numerical.forEach(s => {
+        const mn = raw_numerical_bounds.min[s.column];
+        const mx = raw_numerical_bounds.max[s.column];
+        const avg = numerical_bounds.avg[s.column];
+        const rect_width = (width-(left+right))*((avg-mn)/(mx-mn));                        
+        d3.select("#"+s.column + "_rect")
+            .attr("width", rect_width);
+        d3.select("#"+s.column + "_number")
+            .attr("transform",`translate(${rect_width + 3},${Math.floor(subrect_height/2)+7})`)
+            .attr("text",`(${Math.round(avg*100)/100})`);
+    });
+    categorical.forEach(s => {
+        const counts = tallies[s.column];
+        const categories = Object.keys(counts).sort();
+        const total = categories.reduce((acc, it) => acc + counts[it],0);
+        let x = 0;
+        categories.forEach(cat => {
+            const tiny_rect = d3.select("#"+s.column + "_" + id_sanitize(cat))
+                  .attr("fill", to_color(counts[cat]/total))
+        });
+    });
+}
+
 const main = (data) => {
+
+    d3.select("body").append("h1").text("PRT on cLBP Demographics Explorer");
+    
     let selected_ids = {};
     const demo_ae = data[0];
     const demo_raw = data[1];
@@ -265,178 +473,56 @@ const main = (data) => {
     const out_h = 200;
     const demo_w = 400;
     const demo_h = 200;
+    const demo_margin = {top:20,right:30,bottom:30,left:40};
+    const demo_size = {width:400, height:400};
 
-    demo_ae.forEach(d => selected_ids[d] = true);
+    demo_ae.forEach(d => selected_ids[d.id] = true);
 
-    const proj_margin = margin = ({top: 20, right: 30, bottom: 30, left: 40});
+    const projection_svg = setup_svg_with_axis("body",
+                                               "projection",
+                                               demo_ae,
+                                               "AE1",
+                                               "AE2",
+                                               {top:20, right:30, bottom:30, left:40},
+                                               {width:proj_w, height:proj_h});
 
-    const px = d3.scaleLinear()
-          .domain(d3.extent(demo_ae, d => d.AE1)).nice()
-          .range([proj_margin.left, proj_w - proj_margin.right])
+    const outcomes_svg = setup_svg_with_axis("body",
+                                             "outcomes",
+                                             outcomes,
+                                             "time",
+                                             "bpi_intensity",
+                                             {top:20, right:30, bottom:30, left:40},
+                                             {width:out_w, height:out_h});
 
-    const py = d3.scaleLinear()
-          .domain(d3.extent(demo_ae, d => d.AE2)).nice()
-          .range([proj_h-proj_margin.bottom, proj_margin.top])
-
-    const out_margin = margin = ({top: 20, right: 30, bottom: 30, left: 40});
-    
-    const ox = d3.scaleLinear()
-          .domain(d3.extent(outcomes, d => d.time)).nice()
-          .range([out_margin.left, out_w - out_margin.right])
-
-    const oy = d3.scaleLinear()
-          .domain(d3.extent(outcomes, d => d.bpi_intensity)).nice()
-          .range([out_h-out_margin.bottom, out_margin.top])
-
-
-    const pXAxis = g => g
-    .attr("transform", `translate(0,${proj_h - proj_margin.bottom})`)
-    .call(d3.axisBottom(px))
-    .call(g => g.select(".domain").remove())
-    .call(g => g.append("text")
-        .attr("x", proj_w - proj_margin.right)
-        .attr("y", -4)
-        .attr("fill", "#000")
-        .attr("font-weight", "bold")
-        .attr("text-anchor", "end")
-        .text("AE1"))
-
-    const pYAxis = g => g
-        .attr("transform", `translate(${proj_margin.left},0)`)
-        .call(d3.axisLeft(py))
-        .call(g => g.select(".domain").remove())
-        .call(g => g.select(".tick:last-of-type text").clone()
-              .attr("x", 4)
-              .attr("text-anchor", "start")
-              .attr("font-weight", "bold")
-              .text("AE2"))
-
-    const oXAxis = g => g
-    .attr("transform", `translate(0,${out_h - out_margin.bottom})`)
-    .call(d3.axisBottom(ox))
-    .call(g => g.select(".domain").remove())
-    .call(g => g.append("text")
-        .attr("x", out_w - out_margin.right)
-        .attr("y", -4)
-        .attr("fill", "#000")
-        .attr("font-weight", "bold")
-        .attr("text-anchor", "end")
-        .text("Time (months)"))
-
-    const oYAxis = g => g
-        .attr("transform", `translate(${proj_margin.left},0)`)
-        .call(d3.axisLeft(oy))
-        .call(g => g.select(".domain").remove())
-        .call(g => g.select(".tick:last-of-type text").clone()
-              .attr("x", 4)
-              .attr("text-anchor", "start")
-              .attr("font-weight", "bold")
-              .text("bpi_intensity"))
-
-    
 
     let brush_count = 0;
-    const brush = d3.brush().on("start brush end", brushed)
-    
-    d3.select("body").append("h1").text("PRT on cLBP Demographics Explorer");
-    d3.select("body").append("svg")
-        .attr("id","projection")
-        .attr("width",proj_w)
-        .attr("height", proj_h)
-        .attr("viewBox", to_viewbox(0,0,proj_w,proj_h));
-
-    const projection_svg = d3.select("#projection");
-    projection_svg.append("g").call(pXAxis);
-    projection_svg.append("g").call(pYAxis);
-
-    projection_svg.append("g").attr("id","G1");
-    projection_svg.append("g").attr("id","G2");
-    projection_svg.append("g").attr("id","G3");
+    const brush = d3.brush().on("start brush end", brushed)   
     
     projection_svg.call(brush);
 
-    d3.select("body").append("svg")
-        .attr("id","demographics")
-        .attr("width",400)
-        .attr("height",200)
-        .attr("viewBox",to_viewbox(0,0,400,200));
-    const demo_svg = d3.select("#demographics");
-
-    const rect_data = [
-        {id:"gender_male",row:0,col:0},
-        {id:"gender_female",row:0,col:1},
-        {id:"married_yes",row:1, col:0},
-        {id:"married_no",row:1, col:1},
-        {id:"nonwhite",row:2,col:0},
-        {id:"white",row:2,col:1},
-        {id:"sses",row:3,col:0,width:0}
-    ]
-    
-    demo_svg.selectAll("rect")
-        .data(rect_data)
-        .join("rect")
-        .attr("id", d => d.id)
-        .attr("x",  d => 20 + d.col*80)
-        .attr("y",  d => 20 + d.row*(35+12))
-        .attr("height", d => 35)
-        .attr("width", d => d.width || 80)
-        .attr("stroke","black")
-        .attr("fill","white")
-
-    const label_data = [
-        {text:"Male",row:0,col:0},
-        {text:"Female",row:0,col:1},
-
-        {text:"Married",row:1,col:0},
-        {text:"Unmarried",row:1,col:1},
-        
-        {text:"Nonwhite",row:2,col:0},
-        {text:"White",row:2,col:1},
-
-        {text:"Socioeconomic Status",row:3,col:0}
-    ];
-
-    demo_svg.selectAll("text")
-        .data(label_data)
-        .join("text")
-        .text(d => d.text)
-        .attr("x",  d => 20 + d.col*80)
-        .attr("y",  d => 17 + d.row*(35+12))
-        .attr("stroke","black")
-        .attr("fill","black")
-        .attr("style","font: italic 10px sans-serif")
-
-    
-
-    d3.select("body").append("svg")
-        .attr("id","outcomes")
-        .attr("width",out_w)
-        .attr("height",out_h);
-    const outcomes_svg = d3.select("#outcomes");
-    outcomes_svg.append("g").call(oXAxis);
-    outcomes_svg.append("g").call(oYAxis);
     outcomes_svg.append("path").attr("id","G1");
     outcomes_svg.append("path").attr("id","G2");
     outcomes_svg.append("path").attr("id","G3");
 
-    
+    const demographics_svg = setup_demographics_svg("body","demographics",demo_tidy,demographic_variable_specs,demo_margin,demo_size);
 
-    draw_demo_points(d3.select("#projection"), demo_ae, selected_ids, px, py);
-    draw_outcomes(outcomes_svg, outcomes, selected_ids, ox, oy);
-    draw_demographic_average(demo_svg, demo_tidy, d => selected_ids[d.id]);
+    draw_demo_points(projection_svg, demo_ae, selected_ids);
+    draw_outcomes(outcomes_svg, outcomes, selected_ids);
+    update_demographic_svg(demographics_svg, demo_tidy, demographic_variable_specs, demo_margin, demo_size, d => selected_ids[d.id]);
+    
+    //draw_demographic_average(demo_svg, demo_tidy, d => selected_ids[d.id]);
 
     function brushed({selection}){
         if(selection){
             const [[rx0,ry0],[rx1,ry1]] = selection;
-            const x0 = px.invert(rx0);
-            const y0 = py.invert(ry0);
-            const x1 = px.invert(rx1);
-            const y1 = py.invert(ry1);
-            console.log(rx0, ry0, rx1, ry1)
+            const x0 = projection_svg.x.invert(rx0);
+            const y0 = projection_svg.y.invert(ry0);
+            const x1 = projection_svg.x.invert(rx1);
+            const y1 = projection_svg.y.invert(ry1);
             selected_ids = get_brushed(demo_ae, x0, y0, x1, y1);
-            draw_demo_points(projection_svg, demo_ae, selected_ids, px, py);
-            draw_outcomes(outcomes_svg, outcomes, selected_ids, ox, oy);
-            draw_demographic_average(demo_svg, demo_tidy, d => selected_ids[d.id]);
+            draw_demo_points(projection_svg, demo_ae, selected_ids);
+            draw_outcomes(outcomes_svg, outcomes, selected_ids);
+            update_demographic_svg(demographics_svg, demo_tidy, demographic_variable_specs, demo_margin, demo_size, d => selected_ids[d.id]);
         }
     }
 }
