@@ -438,10 +438,10 @@ const update_demographic_svg = (the_svg, raw_data, spec, margin, size, filter_fu
         const avg = numerical_bounds.avg[s.column];
         const rect_width = (width-(left+right))*((avg-mn)/(mx-mn));                        
         d3.select("#"+s.column + "_rect")
-            .attr("width", rect_width);
+            .attr("width", rect_width || 0.1);
         d3.select("#"+s.column + "_number")
             .attr("transform",`translate(${rect_width + 3},${Math.floor(subrect_height/2)+7})`)
-            .attr("text",`(${Math.round(avg*100)/100})`);
+            .text(`(${Math.round(avg*100)/100})`);
     });
     categorical.forEach(s => {
         const counts = tallies[s.column];

@@ -118,5 +118,3 @@ demo-ae-vis: derived_data/clinical_outcomes-d3.csv
 
 derived_data/meta-data.R: source_data/clinical_outcomes.csv source_data/demographics.csv gen-meta-data.R
 	Rscript gen-meta-data.R
-
-
