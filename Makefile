@@ -49,6 +49,9 @@ derived_data/clinical-outcomes-with-clustering.csv\
   derived_data/clinical-outcomes-with-ae.csv
 	python3 cluster-clinical-outcomes.py
 
+figures/bpi_intensity_by_group.png: source_data/clinical_outcomes.csv bpi_intensity_by_group.R
+	Rscript bpi_intensity_by_group.R
+
 # Plots of various non-projected properties of clinical outcomes per
 # cluster. Not very interesting because the clusters are not very
 # interesting and the AE projection is just (roughly) back pain
