@@ -81,7 +81,7 @@ def build_vae(data_columns=ae_columns,
 
     input = keras.Input(shape=(n_input,));
     e = layers.Dropout(0.1, input_shape=(n_input,))(input);
-    e = layers.GaussianNoise(0.05)(e);
+    #e = layers.GaussianNoise(0.05)(e);
     e = layers.Dense(intermediate_size, activation='relu')(e);
     for i in range(n_intermediate-1):
         e = layers.Dense(intermediate_size, activation='relu')(e);
