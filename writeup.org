@@ -2,6 +2,9 @@
 #+cite_export: csl /home/rstudio/work/european-journal-of-pain.csl
 
 * Demographic Trends in Treatment Response to Pain Reprocessing Therapy for Chronic Lower Back Pain
+(Note: if you are reading the PDF of this file from the git
+repository, it may be out of date. It is included in the repo for
+convenience but the canonical writeup is in the org file in the repo).
 ** Introduction
 
 Chronic lower back pain (cLBP) is the leading cause of disability

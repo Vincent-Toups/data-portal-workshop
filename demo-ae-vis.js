@@ -1,117 +1,86 @@
-const get_bounds = (keys, data) => {
-    const bounds = {};
-    bounds.min = {};
-    bounds.max = {};
-    bounds.avg = {};
-    keys.forEach(k => {bounds.min[k] = Infinity;
-                       bounds.max[k] = -Infinity;
-                       bounds.avg[k] = 0;})
-    const n = data.length;
-    data.forEach(pt => {
-        keys.forEach(k => {
-            if(pt[k] < bounds.min[k]) bounds.min[k] = pt[k];
-            if(pt[k] > bounds.max[k]) bounds.max[k] = pt[k];
-            bounds.avg[k] += pt[k];
-        })
-    })
-    keys.forEach(k => {
-        bounds.avg[k] = bounds.avg[k]/n;
-    })
-    return bounds;    
-}
+// d3.legend.js 
+// (C) 2012 ziggy.jonsson.nyc@gmail.com
+// MIT licence
 
-const tally = function(keys, data){
-    const counts = {};
-    keys.forEach(k => counts[k] = {});
-    data.forEach(d => keys.forEach(k => {
-        const counts_at = counts[k];
-        const val = d[k];
-        const val_count = (counts_at[val] || 0) + 1;
-        counts_at[val] = val_count;
-    }))
-    return counts;
-}
+(function() {
+d3.legend = function(g) {
+  g.each(function() {
+      const g= d3.select(this);
+      const items = {};
+      const svg = d3.select(g.property("nearestViewportElement"));
+      const legendPadding = g.attr("data-style-padding") || 5;
+      const lb = g.append("rect.legend-box");
+      const li = g.append("rect.legend-items");
 
-const to_viewbox = (xmin, ymin, xmax, ymax) =>  [xmin, ymin, xmax, ymax].join(" ")
-
-const cluster_colors = ["red","green","blue","cyan","magenta"];
-const cluster_to_color = c => cluster_colors[c];
-
-const draw_demo_points = (svg_selection, data, selected) => {
-    const x = svg_selection.x;
-    const y = svg_selection.y;
-    svg_selection.selectAll("circle")
-        .data(data)
-        .join("circle")
-        .attr("transform", d => `translate(${x(d.AE1)},${y(d.AE2)})`)
-        .attr("r", 3)
-        .attr("stroke", d => selected[d.id] ? "red" : "gray")
-        .attr("fill", d => cluster_to_color(d.cluster))
-        .attr("subjid", d => d.id);
-}
-
-const calc_averages = (data, keys, fitler) => {
-    const out = {};
-    let n = 0;
-    keys.forEach(k => out[k] = 0);
-    data.forEach(d => {
-        if(filter(d)){
-            keys.forEach(k => {
-                out[k] += d[k];
-            });
-            n = n + 1;                       
+    svg.selectAll("[data-legend]").each(function() {
+        var self = d3.select(this)
+        items[self.attr("data-legend")] = {
+          pos : self.attr("data-legend-pos") || this.getBBox().y,
+          color : self.attr("data-legend-color") != undefined ? self.attr("data-legend-color") : self.style("fill") != 'none' ? self.style("fill") : self.style("stroke") 
         }
-    });
-    keys.forEach(k => out[k] = out[k]/n);
+      })
+
+    //items = d3.entries(items).sort(function(a,b) { return a.value.pos-b.value.pos})
+
+    
+    li.selectAll("text")
+        .data(items,function(d) { return d.key})
+        .call(function(d) { d.enter().append("text")})
+        .call(function(d) { d.exit().remove()})
+        .attr("y",function(d,i) { return i+"em"})
+        .attr("x","1em")
+        .text(function(d) { ;return d.key})
+    
+    li.selectAll("circle")
+        .data(items,function(d) { return d.key})
+        .call(function(d) { d.enter().append("circle")})
+        .call(function(d) { d.exit().remove()})
+        .attr("cy",function(d,i) { return i-0.25+"em"})
+        .attr("cx",0)
+        .attr("r","0.4em")
+        .style("fill",function(d) { console.log(d.value.color);return d.value.color})  
+    
+    // Reposition and resize the box
+    // var lbbox = li[0][0].getBBox()  
+    // lb.attr("x",(lbbox.x-legendPadding))
+    //     .attr("y",(lbbox.y-legendPadding))
+    //     .attr("height",(lbbox.height+2*legendPadding))
+    //     .attr("width",(lbbox.width+2*legendPadding))
+  })
+  return g
+}
+})()
+
+const in_box = (px,py,x1,y1,x2,y2) =>
+      px >= x1 && px <= x2 && py <= y1 && py >= y2;
+const translate = (x,y) => `translate(${x},${y})`
+const max = (a,b) => Math.max(a,b);
+const split = (data, mapper) => {
+    const out = {};
+    data.forEach(d => {
+        const key = mapper(d);
+        const holder = out[key] || [];
+        out[key] = holder;
+        holder.push(d);
+    })
     return out;
 }
-
-const reduce_keys = (data, keys, f, init, filter) => {
-    let state = init;
-    let fs = {};
-    let n = 0;
-    if(typeof f === "function"){
-        keys.forEach(key => fs[key] = f);        
-    } else {
-        fs = f;
-    }
-    data.forEach(d => {
-        if(filter(d)){
-            n++;
-            keys.forEach(key => {
-                state[key] = fs[key](state[key], d[key]);
-            });
+const to_viewbox = (xmin, ymin, xmax, ymax) =>  [xmin, ymin, xmax, ymax].join(" ")
+const lI = x => o => o[x];
+Promise.prototype.spread = function(and_then){
+    return this.then(function(a){
+        return and_then.apply(this, a);
+    });
+}
+const numerify = row => {
+    Object.keys(row).forEach(k => {
+        const nif = +row[k];
+        if(!isNaN(nif)){
+            row[k] = nif;
         }
     });
-    return [n,state];    
+    return row;
 }
-
-const label_ethnicities = (a) => a.map(a => a === 1 ? "Nat.Am./Al" :
-                                       a === 2 ? "Asn/Pac.Isl." :
-                                       a === 3 ? "Blk" :
-                                       a === 4 ? "Wht" :
-                                       a === 5 ? "Other" : "Other");
-
-const label_nonwhite = (a) => a.map(e => e === 4 ? "White" : "Nonwhite")
-
-const label_hispanic = (a) => a.map(h => h === 1 ? "Hsp" : "NonHsp");
-const label_married = (a) => a.map(m => m === 1 ? "Mrd" : "NonMrd");
-const label_gender = (a) => a.map(g => g === 1 ? "Male" :
-                                  g === 2 ? "Female" :
-                                  g === 3 ? "Other" : "Other");
-const label_handedness = (a) => a.map(h => h === 1 ? "R" : h === 2 ? "L" : "A")
-
-const norm = (a) => {
-    let the_min = Infinity;
-    let the_max = -Infinity;
-    a.forEach(e => {
-        the_min = e < the_min ? e : the_min;
-        the_max = e > the_max ? e : the_max;
-    });
-    const range = the_max - the_min;
-    return a.map(e => (e - the_min)/range);
-}
-
 const inside_out = (data) => {
     const keys = Object.keys(data[0]);
     const out = {};
@@ -132,7 +101,180 @@ const outside_in = (data) => {
     return out;
 }
 
+const amin = a => a.reduce((a,b) => Math.min(a,b),Infinity)
+const amax = a => a.reduce((a,b) => Math.max(a,b),-Infinity)
+
+const setup_axes = (svg_element, data, x, y, margin) => {
+    const id = svg_element.attr("id");
+    const width = svg_element.node().clientWidth;
+    const height = svg_element.node().clientHeight;
+    const {top, right, bottom, left} = margin;
+
+    const x_scale = d3.scaleLinear()
+          .domain(d3.extent(data, lI(x)))
+          .nice()
+          .range([left, width-right]);
+    const y_scale = d3.scaleLinear()
+          .domain([0, d3.extent(data, lI(y))[1]])
+          .nice()
+          .range([height-bottom, top]);
+
+    svg_element
+        .attr("viewBox", to_viewbox(0,0,width,height))
+        .append("g")
+        .attr("id",`${id}_x`)
+        .attr("transform",`translate(0, ${height-bottom})`)
+        .call(d3.axisBottom(x_scale));
+
+    svg_element
+        .append("g")
+        .attr("id",`${id}_y`)
+        .attr("transform", `translate(${left}, 0)`)
+        .call(d3.axisLeft(y_scale));
+
+    svg_element.x_scale = x_scale;
+    svg_element.y_scale = y_scale;
+    
+    return svg_element;
+}
+
+const mean_and_sd = (data, key) => {
+    let n = 0;
+    let sq_sum = 0;
+    let sum = 0;
+    const out = {};
+    const mean_key = `${key}_mean`;
+    const sd_key = `${key}_sd`;
+    data.forEach((d) => {
+        const x = d[key];
+        if(d.selected){
+            sum += x;
+            sq_sum += x*x;
+            n = n + 1;
+        }
+    });
+    if(n===0){
+        out[mean_key] = NaN;
+        out[sd_key] = NaN;
+    } else {
+        const mean = sum/n;
+        out[mean_key] = mean;
+        out[sd_key] = Math.sqrt(sq_sum/n - mean*mean);
+    }    
+    return out;
+}
+
+const draw_ae_points = (svg_element, data, x_scale, y_scale, x, y) => {
+    svg_element
+        .selectAll("circle")
+        .data(data)
+        .join("circle")
+        .attr("transform", d => `translate(${x_scale(d.AE1)},${y_scale(d.AE2)})`)
+        .attr("r",3)
+        .attr("stroke", d => d.selected ? "black" : "grey")
+        .attr("fill", d => d3.schemeCategory10[d.cluster+4]);
+}
+
+const group_name = key => ["PRT","Saline","SOC"][key-1];
+const group_name_to_color = gn => ({"PRT":"red","Saline":"green","SOC":"blue"})[gn];
+const group_name_to_fill_color = gn => ({
+    "PRT":"rgba(255,0,0,0.2)",
+    "Saline":"rgba(0,255,0,0.2)",
+    "SOC":"rgba(0,0,255,0.2)"
+})[gn];
+
+const draw_outcomes = (svg_element, data, x_scale, y_scale, x, y, y_err) => {
+    const rev_path = ln => ln.split(" ").reverse().join(" ")
+    const to_points = path => path.replaceAll("M"," ").replaceAll("L"," ").trim();
+    const stats = split(digest_outcomes(data), d => group_name(d.group));
+    const line_f = d3.line()
+          .x(d => x_scale(d[x]))
+          .y(d => y_scale(d[y]));
+    const build_path = data => {
+        const top = [];
+        const bottom = [];
+        const n = data.length;
+        for(let i = 0, j = n-1; i < n; i++, j--){
+            top.push(`${x_scale(data[i][x])},${y_scale(data[i][y] + data[i][y_err]/2)}`)
+            bottom.push(`${x_scale(data[j][x])},${y_scale(data[j][y] - data[j][y_err]/2)}`)
+        }
+        return [top.join(" "),bottom.join(" ")].join(" ");
+    };    
+    Object.keys(stats).forEach(k => {
+        const sub_data = stats[k];
+        const line = line_f(sub_data);
+        const path = build_path(sub_data);
+        const gid = `${k}_line`;
+        const ls = `fill:none;stroke:${group_name_to_color(k)};stroke-width:1`;
+        const ps = `fill:${group_name_to_fill_color(k)};stroke:none;stroke-width:0`;
+        const g = document.querySelector("#"+gid) === null ?
+              svg_element.append("g").attr("id",gid) :
+              svg_element.select("#"+gid);
+        g.html("");
+        g.append("path")
+            .attr("d", line)
+            .attr("style", ls)
+            .property("data-legend",true);
+        g.append("polygon")
+            .attr("points", path)
+            .attr("style", ps);
+    });
+    const ls = svg_element.select(".legend");
+    const lg = ls.size() === 0 ? svg_element.append("g").classed("legend",true) : ls;
+    lg.html("")
+        .attr("transform",translate(30, 30))
+        .call(d3.legend);    
+    
+}
+
+const digest_outcomes = outcomes => {
+    const out = [];
+    const groups = split(outcomes, d => `${d.group}:${d.time}`);
+    Object.keys(groups)
+        .forEach(k=>{
+            const subgroup = groups[k];
+            const sub_out = {};
+            const stats = mean_and_sd(subgroup,'bpi_intensity');
+            sub_out.time = subgroup[0].time;
+            sub_out.group = subgroup[0].group;
+            Object.keys(stats).forEach(k => sub_out[k] = stats[k]);
+            out.push(sub_out);
+        });
+    return out.sort((a,b) => {
+        var t = a.time - b.time;
+        var g = a.group - b.group;
+        return t === 0 ? g : t;
+    });
+};
+
+const select_all = data => data.forEach(d => d.selected = true);
+const unselected_all = data => data.forEach(d => d.selected = false);
+const create_index = (data, key) => {
+    const index = {};
+    data.forEach((d,i) => {
+        const l = index[d[key]] || [];
+        l.push(i);
+        index[d[key]] = l;
+    });
+    return index;
+}
+
 const tidy_demo_data = (data) => {
+    const label_ethnicities = (a) => a.map(a => a === 1 ? "Nat.Am./Al" :
+                                           a === 2 ? "Asn/Pac.Isl." :
+                                           a === 3 ? "Blk" :
+                                           a === 4 ? "Wht" :
+                                           a === 5 ? "Other" : "Other");
+
+    const label_nonwhite = (a) => a.map(e => e === 4 ? "White" : "Nonwhite")
+
+    const label_hispanic = (a) => a.map(h => h === 1 ? "Hsp" : "NonHsp");
+    const label_married = (a) => a.map(m => m === 1 ? "Mrd" : "NonMrd");
+    const label_gender = (a) => a.map(g => g === 1 ? "Male" :
+                                      g === 2 ? "Female" :
+                                      g === 3 ? "Other" : "Other");
+    const label_handedness = (a) => a.map(h => h === 1 ? "R" : h === 2 ? "L" : "A")
+
     const iodata = inside_out(data);
     const out = [];
     out.id = iodata.id;
@@ -151,398 +293,332 @@ const tidy_demo_data = (data) => {
     out.nonwhite = label_nonwhite(iodata.ethnicity);
     return outside_in(out);
 }
- 
-const demographic_variables = ['gender','married_or_living_as_marri','sses','non_white']
 
-const demographic_variable_specs = (()=>{
-    const v = {
-        education:{type:"numerical", order:0},
-        ethnicity:{type:"categorical", order:1},
-        hispanic:{type:"categorical", order:2},
-        gender:{type:"categorical", order:3},
-        employment_status:{type:"numerical", order:4},
-        exercise:{type:"numerical", order:5},
-        handedness:{type:"categorical", order:6},
-        sses:{type:"numerical",label:"SSES", order:7},
-        married_or_living_as_marri:{type:"categorical",label:"Marital Status", order:8},
-        age:{type:"numerical", order:9},
-        weight:{type:"numerical", order:10},
-        backpain_length:{type:"numerical", order:11},
+const counts_to_rows = (obj, sorter, keyname, valuename) => {
+    const keys = Object.keys(obj);
+    const out = [];
+    keys.forEach(k => {
+        const s = {};
+        s[keyname] = k;
+        s[valuename] = obj[k];
+        out.push(s);
+    });
+    return out.sort(sorter);
+}
+
+const digest_ethnicities = data => {
+    const counts_object = {
+
     };
-    return Object.keys(v).map(k => {
-        const val = v[k];
-        val.column = k;
-        return val;
-    });
-})();
-
-
-const to_color = n => {
-    const x = Math.round((1-n)*255);
-    return "rgb("+[x,x,x].join(",")+")"
-}
-
-const draw_demographic_average = (svg_selection, demo_data, filter) => {
-    const gender_count = {male:0,female:0};
-    const married_count = {married:0,unmarried:0}
-    let sses_average = 0;
-    const nonwhite = {nonwhite:0, white:0};
-    let n = 0;
-    demo_data.forEach(d => {
-        if(filter(d)){            
-            if(d.gender==="Male") gender_count["male"]++;
-            if(d.gender==="Female") gender_count["female"]++;
-            sses_average += d.sses;
-            if(d.nonwhite==="Nonwhite") nonwhite["nonwhite"]++;
-            if(d.nonwhite==="White") nonwhite["white"]++;
-            if(d.married_or_living_as_marri==="Mrd") married_count["married"]++;
-            if(d.married_or_living_as_marri==="NonMrd") married_count["unmarried"]++;
-            n++;
-        }
-    });
-    gender_count.male = gender_count.male / n;
-    gender_count.female = gender_count.female / n;
-    married_count.married = married_count.married / n;
-    married_count.unmarried = married_count.unmarried / n;
-    sses_average = n === 0 ? 0 : sses_average/n;
-    nonwhite.nonwhite = nonwhite.nonwhite / n;
-    nonwhite.white = nonwhite.white / n;
-
-    svg_selection.select("#gender_male").attr("fill",to_color(gender_count.male))
-    svg_selection.select("#gender_female").attr("fill",to_color(gender_count.female))
-
-    svg_selection.select("#married_yes").attr("fill",to_color(married_count.married))
-    svg_selection.select("#married_no").attr("fill",to_color(married_count.unmarried))
-
-    svg_selection.select("#nonwhite").attr("fill",to_color(nonwhite.nonwhite))
-    svg_selection.select("#white").attr("fill",to_color(nonwhite.white))
-
-    svg_selection.select("#sses").attr("width",sses_average*360);
-
-}
-
-const to_average = x => x.reduce((a,b) => a+b)/x.length
-
-const average_outcomes_by_group = (data, variable, filter) => {
-    const groups = {};
-    const sorter = (a,b) => {
-        const at = a.time;
-        const bt = b.time;
-        const ag = a.group;
-        const bg = b.group;
-        return ag < bg ? -1 : ag > bg ? 1 : at < bt ? -1 : at > bt ? 1 : 0;
-    }
     data.forEach(d => {
-        if(filter(d)){
-            const group = d.group;
-            const time = d.time;
-            const key = `${group}:${time}`
-            const container = groups[key] || {};
-            groups[key] = container;
-            container.time = time;
-            container.group = group;
-            const holder = container[variable] || [];
-            container[variable] = holder;
-            holder.push(d[variable]);
+        if(d.selected){            
+            const c = counts_object[d.ethnicity] || 0;
+            counts_object[d.ethnicity] = c + 1;
         }
     });
-    return Object.keys(groups).map(item => {
-        groups[item][variable] = to_average(groups[item][variable]);
-        return groups[item];
-    }).sort(sorter);
-}
+    return counts_to_rows(counts_object, (a,b) => a.ethnicity < b.ethnicity, 'ethnicity', 'count');
+};
 
-const split = (data, mapper) => {
-    const out = {};
+const digest_by_counting = column => data => {
+    const counts_object = {
+
+    };
     data.forEach(d => {
-        const key = mapper(d);
-        const holder = out[key] || [];
-        out[key] = holder;
-        holder.push(d);
-    })
-    return out;
-}
-
-const group_to_color = (group) => ({"G1":"RED","G2":"GREEN","G3":"BLUE"})[group];
-
-const draw_outcomes = (svg_selection, outcome_data, selected) => {
-    const x = svg_selection.x;
-    const y = svg_selection.y;
-    const adata = average_outcomes_by_group(outcome_data, 'bpi_intensity', d => selected[d.id])
-    const by_group = split(adata, d => "G"+d.group);
-    Object.keys(by_group).forEach(group => {
-        const line = d3.line()
-              .x(d => x(d.time))
-              .y(d => y(d.bpi_intensity));
-        svg_selection
-            .select("#"+group)        
-            .attr("d",line(by_group[group]))
-            .attr("style", `fill:none;stroke:${group_to_color(group)};stroke-width:1`);
-    })
-}
-
-const get_brushed = (data,x0,y0,x1,y1) => {
-    const out = {};
-    let i = 0;
-    data.forEach(pt => {
-        const x = pt.AE1;
-        const y = pt.AE2;
-        if(x > x0 && x < x1 && y > y1 && y < y0){
-            out[pt.id] = true;
-            i++;
-        } else {
-            out[pt.id] = false;
+        if(d.selected){            
+            const c = counts_object[d[column]] || 0;
+            counts_object[d[column]] = c + 1;
         }
     });
-    return out;
-}
+    return counts_to_rows(counts_object, (a,b) => a[column] < b[column], column, 'count');
+};
 
-const setup_svg_with_axis = (location, id, data, x, y, margin, size) => {
+
+const setup_horizontal_bar_graph_axes = (svg_element, raw_data, digest, category, x, margin) => {
+    const data = digest(raw_data);
+    const id = svg_element.attr("id");
+    const width = svg_element.node().clientWidth;
+    const height = svg_element.node().clientHeight;
     const {top, right, bottom, left} = margin;
-    const {width, height} = size;
+
+    const x_max = data.map(lI(x)).reduce(max);
+
     const x_scale = d3.scaleLinear()
-          .domain(d3.extent(data, d=>d[x])).nice()
-          .range([left, width - right]);
+          .domain([0,x_max])
+          .nice()
+          .range([left, width-right]);
+
+    const y_scale = d3.scaleBand()
+          .domain(data.map(d => d[category]))
+          .rangeRound([top, height - bottom])
+          .padding(0.1);
+
+    svg_element
+        .attr("viewBox", to_viewbox(0,0,width,height))
+        .append("g")
+        .attr("id", `${id}_x`)
+        .attr("transform", `translate(0, ${height-bottom})`)
+        .call(d3.axisBottom(x_scale));
+
+    svg_element
+        .append("g")
+        .attr("id", `${id}_y`)
+        .attr("transform", `translate(${left},0)`)
+        .call(d3.axisLeft(y_scale));
+
+    svg_element.x_scale = x_scale;
+    svg_element.y_scale = y_scale;
+
+    return svg_element;
+
+};
+
+const draw_horizontal_bar_graph = (svg_element, x_scale, y_scale, raw_data, digest, category, x) => {
+    const data = digest(raw_data);
+    const s = svg_element.select(".bars");
+    const g = s.size() === 0 ? svg_element.append("g").classed("bars", true) : s;
+    g.html("");
+    g.selectAll("rect").data(data)
+        .join("rect")
+        .attr("transform",d => `translate(${x_scale(0)},${y_scale(d[category])+10})`)
+        .attr("width", d => x_scale(d[x])-x_scale(0))
+        .attr("height", d => 20)
+        .attr("category", d=>d[category])
+};
+
+const setup_histogram = (svg_element, raw_data, variable, label, n_bins, margin) => {
+    const data = raw_data.filter(d => d.selected);
+    const id = svg_element.attr("id");
+    const width = svg_element.node().clientWidth;
+    const height = svg_element.node().clientHeight;
+    const {top, right, bottom, left} = margin;
+
+    const x_scale = d3.scaleLinear()
+          .domain(d3.extent(data, lI(variable)))
+          .nice()
+          .range([left, width-right]);
+    const hist = d3.histogram()
+          .value(lI(variable))
+          .domain(x_scale.domain())
+          .thresholds(x_scale.ticks(n_bins));
+    const bins = hist(data)
     const y_scale = d3.scaleLinear()
-          .domain(d3.extent(data, d => d[y])).nice()
-          .range([height-bottom, top]);
-    const the_svg = d3.select(location).append("svg");
-    the_svg.attr("id",id)
-        .attr("width", width)
-        .attr("height", height)
+          .range([height-bottom, top])
+          .domain([0, d3.max(bins, d => d.length)]);
+
+
+
+    svg_element
         .attr("viewBox", to_viewbox(0,0,width,height));
-    the_svg.x = x_scale;
-    the_svg.y = y_scale;
-    the_svg.margin = margin;
-    the_svg.append("g")
-        .attr("id",id+"_x")
+
+    svg_element
+        .append("g")
+        .attr("transform", `translate(${left},0)`)
+        .call(d3.axisLeft(y_scale));
+
+    svg_element
+        .append("g")
+        .attr("transform", `translate(${left-left/2},${(height-(top+bottom))/2 + top})`)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .text("count")
+
+    svg_element
+        .append("g")
+        .attr("transform", translate(left+(width-(left+right))/2, height-bottom/2))
+        .append("text")
+        .text(label)
+
+    svg_element
+        .append("g")
         .attr("transform", `translate(0,${height-bottom})`)
         .call(d3.axisBottom(x_scale))
-        .call(g => g.select(".domain").remove())
-        .call(g => g.append("text")
-              .attr("x", width - right)
-              .attr("y", -4)
-              .attr("fill","#000")
-              .attr("font-weight","bold")
-              .attr("text-anchor", "end")
-              .text(x));
-    the_svg.append("g")
-        .attr("id",id+"_y")
-        .attr("transform",`translate(${left},0)`)
-        .call(d3.axisLeft(y_scale))
-        .call(g => g.select(".domain").remove())
-        .call(g => g.select(".tick:last-of-type text").clone()
-              .attr("x",4)
-              .attr("text-anchor","start")
-              .attr("font-weight","bold")
-              .text(y));
-    return the_svg;
+
+    svg_element.x_scale = x_scale;
+    svg_element.y_scale = y_scale;
+    svg_element.hist = hist;
+
+    return svg_element;
 }
 
-const setup_demographics_svg = (location, id, data, spec, margin, size) => {
+const draw_histogram = (svg_element, x_scale, y_scale, histf, raw_data, margin) => {
+    const data = raw_data.filter(d => d.selected);
+    const s = svg_element.select(".bars");
+    const g = s.size() === 0 ? svg_element.append("g").classed("bars",true) : s;
+    const bins = histf(data);
+    const [ignore1,ignore2,width,height] = svg_element.attr("viewBox").split(" ").map(d => +d);
     const {top, right, bottom, left} = margin;
-    const {width, height} = size;
-    spec = spec.filter(d => !d.supress);
-    const n = spec.length;
-    const n_slots = n*2;
-    const subrect_height = (height - (top+bottom))/n_slots;
-    const y_increment = subrect_height*2;
-
-    const numerical_bounds = get_bounds(spec.filter(d => d.type === "numerical").map(d=>d.column), data);
-    const tallies = tally(spec.filter(d => d.type === "categorical").map(d=>d.column), data);
-    
-    const the_svg = d3.select(location).append("svg")
-          .attr("id", id)
-          .attr("width", width)
-          .attr("height", height)
-          .attr("viewBox", to_viewbox(0,0,width,height));
-    the_svg.selectAll("g")
-        .data(spec)
-        .join("g")
-        .attr("id", d => id + "_" + d.column)
-        .attr("transform",d => `translate(${left}, ${top + d.order*y_increment})`)
-        .each(function(d,i) {
-            console.log(i);
-            d3.select(this)
-                .append("text")
-                .text(d.label || d.column)
-                .style("font-size",Math.floor(subrect_height)+"px");
-            console.log(d.type);
-            const rect_offset = Math.floor(subrect_height/2)-5;
-            if(d.type==="numerical"){
-                const mn = numerical_bounds.min[d.column];
-                const mx = numerical_bounds.max[d.column];
-                const avg = numerical_bounds.avg[d.column];
-                const rect_width = (width-(left+right))*((avg-mn)/(mx-mn));                
-                d3.select(this)
-                    .append("rect")
-                    .attr("id", d.column + "_rect")
-                    .attr("x",0)
-                    .attr("y",rect_offset)
-                    .attr("width",rect_width)
-                    .attr("height",Math.floor(subrect_height))
-                    .attr("stroke","black")
-                    .attr("fill","white")
-                d3.select(this)
-                    .append("text")
-                    .attr("id",d.column+"_number")
-                    .style("font-size",Math.floor(subrect_height*0.75)+"px")
-                    .text(`(${Math.round(avg*100)/100})`)
-                    .attr("transform",`translate(${rect_width + 3},${Math.floor(subrect_height/2)+7})`)
-                
-            } else {
-                const counts = tallies[d.column];
-                const categories = Object.keys(counts).sort();
-                const total = categories.reduce((acc, it) => acc + counts[it],0);
-                let x = 0;
-                categories.forEach(cat => {
-                    const g = d3.select(this).append("g").attr("transform",`translate(${x},${rect_offset + Math.floor(subrect_height*0.75)})`);
-                    const txt = g.append("text").text(cat + ":: ").style("font-size",Math.floor(subrect_height*0.75)+"px");
-                    const bb = txt.node().getBBox();
-                    // const n = g.append("text").text(`:: ${counts[cat]},   `)
-                    //       .style("font-size",Math.floor(subrect_height*0.75)+"px")
-                    //       .attr("transform",`translate(${bb.width})`);
-                    const tiny_rect = g.append("rect")
-                          .attr("id",d.column + "_" + id_sanitize(cat))
-                          .attr("transform",`translate(${bb.width},-${Math.floor(subrect_height*0.75)})`)
-                          .attr("width",20)
-                          .attr("height",Math.floor(subrect_height*0.75))
-                          .attr("fill", to_color(counts[cat]/total))
-                          .attr("stroke", "black")
-                    x = x + g.node().getBBox().width + 3;
-                });
-            }
-        })
-    return the_svg;
+    g.html("");
+    g.selectAll("rect")
+        .data(bins)
+        .join("rect")
+        .attr("transform", d => `translate(${x_scale(d.x0)},${y_scale(d.length)})`)
+        .attr("width", d => 8)
+        .attr("count", d => d.length)
+        .attr("height", d => height - bottom - y_scale(d.length))
+        .style("fill", "black");
+    return svg_element;
 }
 
-const id_sanitize = id => id.replaceAll(/[^a-zA-Z]/ig,"_")
-
-
-const update_demographic_svg = (the_svg, raw_data, spec, margin, size, filter_func) => {
-    const {top, right, bottom, left} = margin;
-    const {width, height} = size;
-    const filt_data = raw_data.filter(filter_func);
-    spec = spec.filter(d => !d.supress);
-    const n = spec.length;
-    const n_slots = n*2;
-    const subrect_height = (height - (top+bottom))/n_slots;
-    const raw_numerical_bounds = get_bounds(spec.filter(d => d.type === "numerical").map(d=>d.column), raw_data);
-    const numerical_bounds = get_bounds(spec.filter(d => d.type === "numerical").map(d=>d.column), filt_data);
-    const tallies = tally(spec.filter(d => d.type === "categorical").map(d=>d.column), filt_data);
-    const {numerical, categorical} = split(spec, s => s.type);
-    
-    numerical.forEach(s => {
-        const mn = raw_numerical_bounds.min[s.column];
-        const mx = raw_numerical_bounds.max[s.column];
-        const avg = numerical_bounds.avg[s.column];
-        const rect_width = (width-(left+right))*((avg-mn)/(mx-mn));                        
-        d3.select("#"+s.column + "_rect")
-            .attr("width", rect_width || 0.1);
-        d3.select("#"+s.column + "_number")
-            .attr("transform",`translate(${rect_width + 3},${Math.floor(subrect_height/2)+7})`)
-            .text(`(${Math.round(avg*100)/100})`);
-    });
-    categorical.forEach(s => {
-        const counts = tallies[s.column];
-        const categories = Object.keys(counts).sort();
-        const total = categories.reduce((acc, it) => acc + counts[it],0);
-        let x = 0;
-        categories.forEach(cat => {
-            const tiny_rect = d3.select("#"+s.column + "_" + id_sanitize(cat))
-                  .attr("fill", to_color(counts[cat]/total))
-        });
-    });
-}
-
-const main = (data) => {
-
-    d3.select("body").append("h1").text("PRT on cLBP Demographics Explorer");
-    
-    let selected_ids = {};
-    const demo_ae = data[0];
-    const demo_raw = data[1];
-    const outcomes = data[2];
-    const demo_tidy = tidy_demo_data(demo_raw);
-
-    const ae_bounds = get_bounds(['AE1','AE2'], demo_ae);
-
-    const proj_w = 400;
-    const proj_h = 400;
-    const out_w = 400;
-    const out_h = 200;
-    const demo_w = 400;
-    const demo_h = 200;
-    const demo_margin = {top:20,right:30,bottom:30,left:40};
-    const demo_size = {width:400, height:400};
-
-    demo_ae.forEach(d => selected_ids[d.id] = true);
-
-    const projection_svg = setup_svg_with_axis("body",
-                                               "projection",
-                                               demo_ae,
-                                               "AE1",
-                                               "AE2",
-                                               {top:20, right:30, bottom:30, left:40},
-                                               {width:proj_w, height:proj_h});
-
-    const outcomes_svg = setup_svg_with_axis("body",
-                                             "outcomes",
-                                             outcomes,
-                                             "time",
-                                             "bpi_intensity",
-                                             {top:20, right:30, bottom:30, left:40},
-                                             {width:out_w, height:out_h});
-
-
-    let brush_count = 0;
-    const brush = d3.brush().on("start brush end", brushed)   
-    
-    projection_svg.call(brush);
-
-    outcomes_svg.append("path").attr("id","G1");
-    outcomes_svg.append("path").attr("id","G2");
-    outcomes_svg.append("path").attr("id","G3");
-
-    const demographics_svg = setup_demographics_svg("body","demographics",demo_tidy,demographic_variable_specs,demo_margin,demo_size);
-
-    draw_demo_points(projection_svg, demo_ae, selected_ids);
-    draw_outcomes(outcomes_svg, outcomes, selected_ids);
-    update_demographic_svg(demographics_svg, demo_tidy, demographic_variable_specs, demo_margin, demo_size, d => selected_ids[d.id]);
-    
-    //draw_demographic_average(demo_svg, demo_tidy, d => selected_ids[d.id]);
-
-    function brushed({selection}){
-        if(selection){
-            const [[rx0,ry0],[rx1,ry1]] = selection;
-            const x0 = projection_svg.x.invert(rx0);
-            const y0 = projection_svg.y.invert(ry0);
-            const x1 = projection_svg.x.invert(rx1);
-            const y1 = projection_svg.y.invert(ry1);
-            selected_ids = get_brushed(demo_ae, x0, y0, x1, y1);
-            draw_demo_points(projection_svg, demo_ae, selected_ids);
-            draw_outcomes(outcomes_svg, outcomes, selected_ids);
-            update_demographic_svg(demographics_svg, demo_tidy, demographic_variable_specs, demo_margin, demo_size, d => selected_ids[d.id]);
-        }
-    }
-}
-
-const numerify = row => {
-    Object.keys(row).forEach(k => {
-        const nif = +row[k];
-        if(!isNaN(nif)){
-            row[k] = nif;
-        }
-    });
-    return row;
-}
 const demo_ae_p = d3.csv("derived_data/demographic_ae.csv", numerify);
 const demo_raw_p = d3.csv("source_data/demographics.csv", numerify);
 const outcomes_p = d3.csv("derived_data/clinical_outcomes-d3.csv", numerify);
-
 const data = Promise.all([demo_ae_p, demo_raw_p, outcomes_p]);
+const main = (demo_ae, demo_raw, outcomes) => {
+    const grid_header       = d3.select(".grid-header");
+    const grid_footer       = d3.select(".grid-footer");
+    const grid_projection   = d3.select(".grid-projection");
+    const grid_plot         = d3.select(".grid-plot");
+    const grid_demographics = d3.select(".grid-demographics");
+    const grid_explanation  = d3.select(".grid-explanation");
+    const demo_tidy = tidy_demo_data(demo_raw);
+
+    const datasets = [demo_ae, demo_tidy, outcomes];
+
+
+    datasets.forEach(select_all);
+
+    demo_ae.id_index = create_index(demo_ae, "id");
+    demo_raw.id_index = create_index(demo_raw, "id");
+    demo_tidy.id_index = create_index(demo_tidy, "id");
+    outcomes.id_index = create_index(outcomes, "id");
+
+    window.demo_ae = demo_ae;
+    window.demo_raw = demo_raw;
+    window.demo_tidy = demo_tidy;
+    window.outcomes = outcomes;
+
+    const projection = setup_axes(d3.select("#projection"),
+                                  demo_ae,
+                                  "AE1","AE2",
+                                  {top:20,right:30,bottom:30,left:40});
+    draw_ae_points(projection,
+                   demo_ae,
+                   projection.x_scale,
+                   projection.y_scale,
+                   'AE1',
+                   'AE2');
+    
+
+    const plot = setup_axes(d3.select("#plot"),
+                            digest_outcomes(outcomes),
+                            "time","bpi_intensity_mean",
+                            {top:20,right:30,bottom:30,left:40});
+
+    draw_outcomes(plot, outcomes, plot.x_scale, plot.y_scale,
+                  'time', 'bpi_intensity_mean', 'bpi_intensity_sd')
+
+    const ethnicities = setup_horizontal_bar_graph_axes(d3.select("#ethnicities"),
+                                                        demo_tidy,
+                                                        digest_by_counting("ethnicity"),
+                                                        "ethnicity",
+                                                        "count",
+                                                        {top:20,right:30,bottom:30,left:80});
+
+    draw_horizontal_bar_graph(ethnicities, ethnicities.x_scale, ethnicities.y_scale, demo_tidy,
+                              digest_by_counting("ethnicity"),
+                              'ethnicity','count');
+
+    const gender = setup_horizontal_bar_graph_axes(d3.select("#gender"),
+                                                   demo_tidy,
+                                                   digest_by_counting("gender"),
+                                                   "gender",
+                                                   "count",
+                                                   {top:20,right:30,bottom:30,left:80});
+    
+    draw_horizontal_bar_graph(gender, gender.x_scale, gender.y_scale, demo_tidy,
+                              digest_by_counting("gender"),
+                              'gender','count');
+
+    const hispanic = setup_horizontal_bar_graph_axes(d3.select("#race"),
+                                                   demo_tidy,
+                                                   digest_by_counting("hispanic"),
+                                                   "hispanic",
+                                                   "count",
+                                                   {top:20,right:30,bottom:30,left:80});
+    
+    draw_horizontal_bar_graph(hispanic, hispanic.x_scale, hispanic.y_scale, demo_tidy,
+                              digest_by_counting("hispanic"),
+                              'hispanic','count');
+
+    const married_or_living_as_marri = setup_horizontal_bar_graph_axes(d3.select("#marital"),
+                                                   demo_tidy,
+                                                   digest_by_counting("married_or_living_as_marri"),
+                                                   "married_or_living_as_marri",
+                                                   "count",
+                                                   {top:20,right:30,bottom:30,left:80});
+    
+    draw_horizontal_bar_graph(married_or_living_as_marri, married_or_living_as_marri.x_scale, married_or_living_as_marri.y_scale, demo_tidy,
+                              digest_by_counting("married_or_living_as_marri"),
+                              'married_or_living_as_marri','count');
+
+    const age_margin = {top:20,right:30,bottom:55,left:55};
+    const age = setup_histogram(d3.select("#age"), demo_tidy, "age", "age (y)", 20, age_margin);
+    draw_histogram(age, age.x_scale, age.y_scale, age.hist, demo_tidy,age_margin);
+
+    const sse_margin = {top:20,right:30,bottom:55,left:55};
+    const sse = setup_histogram(d3.select("#sse"), demo_tidy, "sses", "self-rep. socio. status", 20, sse_margin);
+    draw_histogram(sse, sse.x_scale, sse.y_scale, sse.hist, demo_tidy,sse_margin);
+
+    const prx_scale = projection.x_scale;
+    const pry_scale = projection.y_scale;
+    const set_by_id_index = (array_with_index, id, selected_state) => {
+        const indexes = array_with_index.id_index;
+        indexes[id].forEach(index => {
+            array_with_index[index].selected = selected_state;
+        })
+    };
+    d3.select(".container").attr("style", "height:100%;")
+    projection.call(d3.brush().on("start brush end", (event) => {
+        const {selection} = event;
+        if (selection) {
+            const [[rx0,ry0],[rx1,ry1]] = selection;
+            const x0 = projection.x_scale.invert(rx0);
+            const y0 = projection.y_scale.invert(ry0);
+            const x1 = projection.x_scale.invert(rx1);
+            const y1 = projection.y_scale.invert(ry1);
+            console.log("orig:",rx0, ry0, rx1, ry1);
+            console.log("inve:",x0,y0,x1,y1);
+            demo_ae.forEach((row) => {
+                const {id,AE1,AE2} = row;
+                const selected = in_box(AE1, AE2, x0, y0, x1, y1);
+                //if(selected) debugger;
+                row.selected = selected;
+                set_by_id_index(demo_tidy, id, selected);
+                set_by_id_index(outcomes, id, selected);
+            });
+        } else {
+            demo_ae.forEach((row) => {
+                const {id} = row;
+                const selected = true;
+                row.selected = selected;
+                set_by_id_index(demo_tidy, id, selected);
+                set_by_id_index(outcomes, id, selected);
+            });
+        }
+        draw_ae_points(projection,
+                       demo_ae,
+                       projection.x_scale,
+                       projection.y_scale,
+                       'AE1',
+                       'AE2');
+        draw_outcomes(plot, outcomes, plot.x_scale, plot.y_scale,
+                      'time', 'bpi_intensity_mean', 'bpi_intensity_sd');
+        draw_horizontal_bar_graph(ethnicities, ethnicities.x_scale, ethnicities.y_scale, demo_tidy,
+                                  digest_by_counting("ethnicity"),
+                                  'ethnicity','count');
+        draw_horizontal_bar_graph(gender, gender.x_scale, gender.y_scale, demo_tidy,
+                                  digest_by_counting("gender"),
+                                  'gender','count');
+        draw_horizontal_bar_graph(married_or_living_as_marri, married_or_living_as_marri.x_scale, married_or_living_as_marri.y_scale, demo_tidy,
+                                  digest_by_counting("married_or_living_as_marri"),
+                                  'married_or_living_as_marri','count')
+        draw_histogram(age, age.x_scale, age.y_scale, age.hist, demo_tidy,age_margin);
+        draw_histogram(sse, sse.x_scale, sse.y_scale, sse.hist, demo_tidy,sse_margin);
+        
+        
+    }));
+};
 
 document.addEventListener("DOMContentLoaded", () => {
-    data.then(main);
+    data.spread(main);
 });
-
