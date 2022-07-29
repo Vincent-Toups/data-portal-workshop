@@ -1,0 +1,125 @@
+html {
+    height: 100vh;
+}
+body {
+    height: 100vh;
+}
+
+.container {  display: grid;
+  grid-template-columns: 1.2fr 1.5fr 0.3fr;
+  grid-template-rows: 0.4fr 2.1fr 1fr 0.5fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "grid-header grid-header grid-header"
+    "grid-projection grid-demographics ."
+    "grid-plot explanation ."
+    "grid-footer grid-footer grid-footer";
+}
+
+.grid-header { grid-area: grid-header; }
+
+.grid-footer { grid-area: grid-footer; }
+
+.grid-projection {  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 0.2fr 1.8fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "grid-projection-title grid-projection-title grid-projection-title"
+    "grid-projection-content grid-projection-content grid-projection-content"
+    "grid-projection-content grid-projection-content grid-projection-content";
+  grid-area: grid-projection;
+}
+
+.grid-projection-title { grid-area: grid-projection-title; }
+
+.grid-projection-content { grid-area: grid-projection-content; }
+
+.grid-plot {  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 1fr;
+  grid-template-rows: 0.4fr 1.6fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "grid-plot-title grid-plot-title grid-plot-title"
+    "grid-plot-content grid-plot-content grid-plot-content"
+    "grid-plot-content grid-plot-content grid-plot-content";
+  grid-area: grid-plot;
+}
+
+.grid-plot-title { grid-area: grid-plot-title; }
+
+.grid-plot-content { grid-area: grid-plot-content; }
+
+.grid-demographics {  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 0.2fr 1.8fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "grid-demographics-title grid-demographics-title grid-demographics-title"
+    "ethnicities ethnicities binary"
+    "continuous continuous binary";
+  grid-area: grid-demographics;
+}
+
+.grid-demographics-title { grid-area: grid-demographics-title; }
+
+.ethnicities { grid-area: ethnicities; }
+
+.continuous {  display: grid;
+  grid-template-columns: 0.9fr 0.6fr 1.5fr;
+  grid-template-rows: 1fr 0.6fr 1.4fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "age age sse"
+    "age age sse"
+    "age age sse";
+  grid-area: continuous;
+}
+
+.age { grid-area: age; }
+
+.sse { grid-area: sse; }
+
+.binary {  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "gender gender gender"
+    "race race race"
+    "marital marital marital";
+  grid-area: binary;
+}
+
+.gender { grid-area: gender; }
+
+.race { grid-area: race; }
+
+.marital { grid-area: marital; }
+
+.explanation {  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 0.4fr 1.6fr 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "explanation-title explanation-title explanation-title"
+    "explanation-content explanation-content explanation-content"
+    "explanation-content explanation-content explanation-content";
+  grid-area: explanation;
+}
+
+.explanation-title { grid-area: explanation-title; }
+
+.explanation-content { grid-area: explanation-content; }
+
+svg {
+    width: 100%;
+    height: 100%;
+}

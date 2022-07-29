@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Ashar 2022 Demographic Explorer</title>
+    <script src="d3.js"></script>
+    <script src="fancy-demo-ae-vis.js"></script>
+    <link rel="stylesheet" href="./fancy.css"/>
+  </head>
+  <body>
+    <div class="container">
+      <div class="grid-header"></div>
+      <div class="grid-footer"></div>
+      <div class="grid-projection">
+        <div class="grid-projection-title">Variational Auto-encoder Projection</div>
+        <div class="grid-projection-content">
+          <svg id="projection"></svg>
+        </div>
+      </div>
+      <div class="grid-plot">
+        <div class="grid-plot-title">Clinical Outcomes</div>
+        <div class="grid-plot-content">
+          <svg id="plot"></svg>
+        </div>
+      </div>
+      <div class="grid-demographics">
+        <div class="grid-demographics-title">Raw Demographics</div>
+        <div class="ethnicities"><svg id="ethnicities"></svg></div>
+        <div class="continuous">
+          <div class="age"><svg id="age"></svg></div>
+          <div class="sse"><svg id="sse"></svg></div>
+        </div>
+        <div class="binary">
+          <div class="gender"><svg id="gender"></div>
+          <div class="race"><svg id="race"></div>
+          <div class="marital"><svg id="marital"></div>
+        </div>
+      </div>
+      <div class="explanation">
+        <div class="explanation-title">Explanation:</div>
+        <div class="explanation-content">
+          <p>This
+            visualization shows how patient demographics relate to the
+            effectiveness of <span style="color:red;">Pain Reprocessing Therapy (PRT)</span>, <span style="color:green;">Saline
+            Injection</span> (a placebo) and <span style="color:blue;">Standard of Care (SOC)</span>.</p>
+          <p>The "Projection" plot shows an abstract demographic space
+            into which each subject was placed by a variational
+            auto-encoder. Points are colored by a semi-supervised clustering</p>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
+
+
